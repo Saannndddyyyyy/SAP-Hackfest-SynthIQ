@@ -316,9 +316,15 @@
         }
 
         .log-line.personal {
-            background: rgba(251, 191, 36, 0.1);
+            background: rgba(251, 191, 191, 0.1);
             color: var(--gold);
             border-color: var(--gold);
+        }
+
+        .log-line.cultural {
+            background: rgba(124, 106, 247, 0.1);
+            color: #a78bfa;
+            border-color: #7c3aed;
         }
 
         .log-line small {
@@ -615,12 +621,14 @@
                 </div>
 
                 <div class="card">
-                    <div class="card-label" id="sample-label">Representative Audience Sample (Stratified)</div>
+                    <div class="card-label" id="sample-label">Representative Audience Sample (Cultural Stratification)
+                    </div>
                     <table class="leaderboard">
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th style="width:120px">Archetype</th>
+                                <th>Demographics (Age/Gen/State)</th>
+                                <th>Archetype</th>
                                 <th>Brief</th>
                                 <th>Intent</th>
                             </tr>
@@ -754,7 +762,10 @@
                 <div class="verbatim-card">
                     <div class="card-label" style="color:var(--accent3)">Hero Persona Verification</div>
                     <p id="hero-verbatim" class="verbatim-text"></p>
-                    <div id="hero-name" class="verbatim-author"></div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                        <div id="hero-name" class="verbatim-author"></div>
+                        <div id="hero-demographics" style="font-size:9px; color:var(--muted); font-weight:700;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -804,16 +815,23 @@
                     </div>
                     <div class="verbatim-card" style="margin-top:16px;">
                         <p id="hero-drift-verbatim" class="verbatim-text"></p>
-                        <div id="hero-drift-name" class="verbatim-author"></div>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                            <div id="hero-drift-name" class="verbatim-author"></div>
+                            <div id="hero-drift-demographics"
+                                style="font-size:9px; color:var(--muted); font-weight:700;"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="card">
-                    <div class="card-label" id="buyer-sample-title">Representative Sample (Stratified Mix)</div>
+                    <div class="card-label" id="buyer-sample-title">Representative Sample (Cultural Mix)</div>
                     <table class="leaderboard">
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th style="width:120px">Archetype</th>
+                                <th>Age</th>
+                                <th>Gen</th>
+                                <th>State</th>
+                                <th>Archetype</th>
                                 <th>Brief</th>
                                 <th>Final Intent</th>
                             </tr>
@@ -865,6 +883,60 @@
             { type: "FAMILY EVENT", text: "Unplanned social obligation/wedding. Liquidity drained.", drop: 20 }
         ];
 
+        // Cultural Bias Layer - Hofstede India Engine
+        const FACTOR_WEIGHTS = { "PDI": 0.20, "IDV": 0.25, "UAI": 0.25, "LTO": 0.20, "IVR": 0.10 };
+        const INDIA_BASE = { "PDI": 60, "IDV": 45, "UAI": 42, "LTO": 50, "IVR": 28 };
+
+        const STATE_RULES = {
+            "Kerala": [
+                { factor: "PDI", delta: -13, reason: "high literacy + egalitarianism" },
+                { factor: "IDV", delta: +17, reason: "NRI remittance agency" },
+                { factor: "UAI", delta: -10, reason: "ambiguity normalization" },
+                { factor: "LTO", delta: +15, reason: "generational edu-investment" },
+                { factor: "IVR", delta: +7, reason: "Gulf lifestyle exposure" }
+            ],
+            "Gujarat": [
+                { factor: "IDV", delta: +20, reason: "entrepreneurial DNA" },
+                { factor: "UAI", delta: -12, reason: "diamond/mercantile risk-comfort" },
+                { factor: "LTO", delta: +20, reason: "long-horizon wealth accumulation" },
+                { factor: "IVR", delta: -10, reason: "austerity culture" }
+            ],
+            "Goa": [
+                { factor: "PDI", delta: -8, reason: "Portuguese legacy" },
+                { factor: "IDV", delta: +20, reason: "tourism individual initiative" },
+                { factor: "LTO", delta: -8, reason: "present-focused leisure" },
+                { factor: "IVR", delta: +44, reason: "highest indulgence index" }
+            ],
+            "Maharashtra": [
+                { factor: "IDV", delta: +10, reason: "urban competitive center" },
+                { factor: "PDI", delta: +5, reason: "corporate hierarchy" },
+                { factor: "IVR", delta: +15, reason: "cosmopolitan spending" }
+            ],
+            "Tamil Nadu": [
+                { factor: "LTO", delta: +18, reason: "conservative asset building" },
+                { factor: "UAI", delta: +10, reason: "process-driven discipline" },
+                { factor: "PDI", delta: +5, reason: "structured institutionalism" }
+            ],
+            "Punjab": [
+                { factor: "IVR", delta: +25, reason: "agrarian prosperity + hospitality" },
+                { factor: "IDV", delta: +10, reason: "pioneer/migrant spirit" },
+                { factor: "UAI", delta: -5, reason: "robust risk appetite" }
+            ],
+            "West Bengal": [
+                { factor: "IDV", delta: -10, reason: "collectivist intellectualism" },
+                { factor: "PDI", delta: -5, reason: "unionized egalitarian roots" },
+                { factor: "LTO", delta: +10, reason: "cultural preservation" }
+            ],
+            "Karnataka": [
+                { factor: "IDV", delta: +15, reason: "tech-driven meritocracy" },
+                { factor: "PDI", delta: -5, reason: "start-up flattening" },
+                { factor: "IVR", delta: +10, reason: "entertainment-first city culture" }
+            ]
+        };
+
+        const STATES = Object.keys(STATE_RULES);
+        const GENDERS = ["Male", "Female"];
+
         function setMode(mode) {
             simMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -893,11 +965,26 @@
                     track.innerHTML += `<div class="census-seg" style="width:${a.weight * 100}%; background:${a.color}"></div>`;
                     legend.innerHTML += `<div><span style="color:${a.color}">●</span> <b>${a.name}</b></div>`;
                     for (let i = 0; i < count; i++) {
+                        const state = STATES[Math.floor(Math.random() * STATES.length)];
+                        const gender = GENDERS[Math.floor(Math.random() * GENDERS.length)];
+                        const bio = a.phrases[Math.floor(Math.random() * a.phrases.length)];
+
+                        // Build individual Hofstede profile
+                        let hProf = { ...INDIA_BASE };
+                        if (STATE_RULES[state]) {
+                            STATE_RULES[state].forEach(rule => {
+                                hProf[rule.factor] = Math.max(10, Math.min(95, hProf[rule.factor] + rule.delta));
+                            });
+                        }
+
                         agents.push({
                             name: FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)] + " " + LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)],
-                            type: a.name, color: a.color, sens: a.sensitivity, age: a.age + Math.floor(Math.random() * 15),
-                            income: a.income * (0.8 + Math.random() * 0.4), base: 0, current: 0,
-                            bio: a.phrases[Math.floor(Math.random() * a.phrases.length)]
+                            type: a.name, color: a.color, sens: a.sensitivity,
+                            age: a.age + Math.floor(Math.random() * 15),
+                            gender: gender, state: state, hProf: hProf,
+                            income: a.income * (0.8 + Math.random() * 0.4),
+                            base: 0, current: 0,
+                            bio: bio
                         });
                     }
                 });
@@ -920,7 +1007,29 @@
                     let s = 50;
                     if ((txt.includes('daily') || txt.includes('utility') || txt.includes('eco')) && a.income < 70000) s += 15;
                     if ((txt.includes('premium') || txt.includes('luxury')) && a.income > 150000) s += 20;
-                    return Math.min(100, s + (Math.random() * 20));
+
+                    // Cultural Fit Logic
+                    let cFit = 0;
+                    const p = a.hProf;
+
+                    // High PDI (Hierarchy fit) - weight 0.20
+                    if (txt.includes('loyalty') || txt.includes('established') || txt.includes('status')) cFit += (p.PDI / 100) * 10;
+
+                    // IDV (Individuality vs Agreeableness) - weight 0.25
+                    if (txt.includes('custom') || txt.includes('unique')) cFit += (p.IDV / 100) * 12;
+                    else cFit += ((100 - p.IDV) / 100) * 8; // Collectivist fit
+
+                    // UAI (Risk tolerance) - weight 0.25
+                    if (txt.includes('secure') || txt.includes('guarantee') || txt.includes('warranty')) cFit += (p.UAI / 100) * 15;
+                    else if (txt.includes('innovative') || txt.includes('experimental')) cFit += ((100 - p.UAI) / 100) * 15;
+
+                    // LTO (Investment horizon) - weight 0.20
+                    if (txt.includes('longevity') || txt.includes('durable')) cFit += (p.LTO / 100) * 12;
+
+                    // IVR (Indulgence weight) - 0.10
+                    if (txt.includes('fun') || txt.includes('joy') || txt.includes('gift')) cFit += (p.IVR / 100) * 10;
+
+                    return Math.min(100, s + cFit + (Math.random() * 15));
                 }
 
                 if (simMode === 'ab') {
@@ -939,6 +1048,7 @@
 
                 agents.forEach(a => a.current = a.base);
                 document.getElementById('hero-name').innerText = heroAgent.name + " (" + heroAgent.type + ")";
+                document.getElementById('hero-demographics').innerText = `${heroAgent.age}yr | ${heroAgent.gender} | ${heroAgent.state}`;
                 document.getElementById('hero-verbatim').innerText = `"Considering my current lifestyle, I'm ${heroAgent.base.toFixed(0)}% certain about this. It seems to resonate with my priorities."`;
                 document.getElementById('res-2').style.display = 'block';
                 stepCompleted[2] = true;
@@ -951,25 +1061,50 @@
             const rate = parseInt(document.getElementById('rate-input').value);
             showOverlay("Environment Drift...", ["Inducing Macro Shocks...", "Spawning Random Life Events...", "Tracing Intent Fracture..."], () => {
                 const log = document.getElementById('shock-log'); log.innerHTML = '';
+
+                // Track counts for balanced logging (10 each)
+                let counts = { macro: 0, personal: 0, cultural: 0 };
+                const logLimit = 10;
+
                 agents.forEach((a, i) => {
                     const macroDrop = (inf / 100 + rate / 100) * a.sens * 12;
-                    const hasShock = Math.random() < 0.06;
                     let psDrop = 0;
+                    let culDrop = 0;
 
-                    if (hasShock) {
-                        const shock = SHOCK_LIBRARY[Math.floor(Math.random() * SHOCK_LIBRARY.length)];
-                        psDrop = shock.drop;
-                        if (i % 150 === 0 && i < 3000) {
-                            log.innerHTML += `<div class="log-line personal">⚡ [${shock.type}] <b>${a.name}</b> intent crashed: -${(macroDrop + psDrop).toFixed(0)}% <small>${shock.text}</small></div>`;
-                        }
-                    } else if (i % 300 === 0 && i < 3000) {
-                        log.innerHTML += `<div class="log-line shock">◈ [MACRO SHOCK] <b>${a.name}</b> intent eroded: -${macroDrop.toFixed(0)}% <small>Rationale: High inflation sensitivity + income strain.</small></div>`;
+                    // 1. Macromicro Shock (Indices for 10 guaranteed logs)
+                    if (counts.macro < logLimit && i % Math.floor(popSize / 15) === 0) {
+                        log.innerHTML += `<div class="log-line shock">◈ [MACRO SHOCK] <b>${a.name}</b> intent eroded: -${macroDrop.toFixed(0)}% <small>State: ${a.state} | Rationale: High inflation sensitivity + income strain.</small></div>`;
+                        counts.macro++;
                     }
 
-                    a.current = Math.max(0, a.current - macroDrop - psDrop);
+                    // 2. Personal Shock (Random Life Event)
+                    const hasPersonal = Math.random() < 0.05;
+                    if (hasPersonal) {
+                        const shock = SHOCK_LIBRARY[Math.floor(Math.random() * SHOCK_LIBRARY.length)];
+                        psDrop = shock.drop;
+                        if (counts.personal < logLimit) {
+                            log.innerHTML += `<div class="log-line personal">⚡ [${shock.type}] <b>${a.name}</b> intent crashed: -${psDrop.toFixed(0)}% <small>${shock.text}</small></div>`;
+                            counts.personal++;
+                        }
+                    }
+
+                    // 3. Cultural Bias/Friction
+                    // Thresholds adjusted: PDI > 60 (Hierarchy sensitivity) or UAI > 50 (Risk sensitivity)
+                    const culturalFriction = (a.hProf.PDI > 60 && inf > 6) || (a.hProf.UAI > 50 && rate > 4);
+                    if (culturalFriction) {
+                        culDrop = 12 + Math.random() * 8;
+                        if (counts.cultural < logLimit) {
+                            const reason = a.hProf.PDI > 60 ? "Bureaucratic friction: Regional PDI hierarchy resists market shifts" : "Uncertainty avoidance (UAI): Local risk culture triggers panic divestment";
+                            log.innerHTML += `<div class="log-line cultural">🕉 [CULTURAL FRICTION] <b>${a.name}</b> (${a.state}): -${culDrop.toFixed(0)}% <small>Rationale: ${reason}.</small></div>`;
+                            counts.cultural++;
+                        }
+                    }
+
+                    a.current = Math.max(0, a.current - macroDrop - psDrop - culDrop);
                 });
+
                 stepCompleted[3] = true;
-                notify("Market Fracture Complete.");
+                notify("Market Fracture Complete. Cultural logs synced.");
             });
         }
 
@@ -987,6 +1122,7 @@
                 document.getElementById('hero-pre-val').innerText = heroAgent.base.toFixed(0) + "%";
                 document.getElementById('hero-post-val').innerText = heroAgent.current.toFixed(0) + "%";
                 document.getElementById('hero-drift-name').innerText = heroAgent.name;
+                document.getElementById('hero-drift-demographics').innerText = `${heroAgent.age}yr | ${heroAgent.gender} | ${heroAgent.state}`;
                 document.getElementById('hero-drift-verbatim').innerText = `"Drift has changed my outlook. I've gone from ${heroAgent.base.toFixed(0)}% to ${heroAgent.current.toFixed(0)}% because I've had to reprioritize my survival budget."`;
 
                 // Stratified Sample (Random 10 with mixed intent)
@@ -1011,7 +1147,15 @@
                 const body = document.getElementById('audit-sample-body'); body.innerHTML = '';
                 mixed10.forEach(p => {
                     const cls = p.current <= 50 ? 'low' : (p.current <= 75 ? 'mid' : 'high');
-                    body.innerHTML += `<tr><td>${p.name}</td><td>${p.type}</td><td>${p.bio}</td><td class="score ${cls}">${p.current.toFixed(0)}%</td></tr>`;
+                    body.innerHTML += `<tr>
+                        <td>${p.name}</td>
+                        <td>${p.age}</td>
+                        <td>${p.gender[0]}</td>
+                        <td>${p.state}</td>
+                        <td>${p.type}</td>
+                        <td>${p.bio}</td>
+                        <td class="score ${cls}">${p.current.toFixed(0)}%</td>
+                    </tr>`;
                 });
 
                 document.getElementById('buyer-sample-title').innerText = `Stratified Representative Sample (${targetCluster})`;
@@ -1063,7 +1207,13 @@
             fresh10.forEach(p => {
                 const tier = p.current >= 70 ? "High" : (p.current >= 40 ? "Mid" : "Low");
                 const cls = p.current <= 50 ? 'low' : (p.current <= 75 ? 'mid' : 'high');
-                repBody.innerHTML += `<tr><td><b>${p.name}</b></td><td>${p.type}</td><td>${p.bio}</td><td class="score ${cls}">${p.current.toFixed(0)}% <span class="rep-tag">${tier} Intent</span></td></tr>`;
+                repBody.innerHTML += `<tr>
+                    <td><b>${p.name}</b></td>
+                    <td>${p.age} / ${p.gender[0]} / ${p.state}</td>
+                    <td>${p.type}</td>
+                    <td>${p.bio}</td>
+                    <td class="score ${cls}">${p.current.toFixed(0)}% <span class="rep-tag">${tier}</span></td>
+                </tr>`;
             });
 
             // Opportunity Machine

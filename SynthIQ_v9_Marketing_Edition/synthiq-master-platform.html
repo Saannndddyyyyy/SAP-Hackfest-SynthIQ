@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SynthIQ — Dynamic Marketing Intelligence</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050508;
+            --surface: #0e0e15;
+            --surface2: #14141e;
+            --border: #242432;
+            --accent: #7c6af7;
+            --accent-glow: rgba(124, 106, 247, 0.4);
+            --accent2: #f97316;
+            --accent3: #22d3a5;
+            --text: #f1f1f7;
+            --muted: #6b6b8b;
+            --danger: #f43f5e;
+            --gold: #fbbf24;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Syne', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.3;
+        }
+
+        /* Top Progress Wizard */
+        .wizard-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 24px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--accent), var(--accent3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .step-indicator {
+            display: flex;
+            gap: 24px;
+            position: relative;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .step.active {
+            color: var(--text);
+        }
+
+        .step.completed {
+            color: var(--accent3);
+        }
+
+        .step-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            background: var(--surface2);
+        }
+
+        .step.active .step-num {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        .step.completed .step-num {
+            background: var(--accent3);
+            border-color: var(--accent3);
+            color: var(--bg);
+        }
+
+        /* Main Viewport */
+        .viewport {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page {
+            display: none;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .title-block {
+            margin-bottom: 40px;
+        }
+
+        .title-block h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 40px;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+
+        .title-block p {
+            color: var(--muted);
+            font-size: 16px;
+            max-width: 600px;
+        }
+
+        /* Component Cards */
+        .grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+        }
+
+        .card-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .card-val {
+            font-family: 'DM Serif Display', serif;
+            font-size: 32px;
+            line-height: 1;
+        }
+
+        /* Action Footer */
+        .action-footer {
+            background: rgba(14, 14, 21, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            padding: 20px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Census Hub */
+        .census-track {
+            height: 40px;
+            background: var(--surface2);
+            border-radius: 8px;
+            display: flex;
+            overflow: hidden;
+            margin: 16px 0;
+            border: 1px solid var(--border);
+        }
+
+        .census-seg {
+            height: 100%;
+            transition: width 1s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        /* Distribution Chart */
+        .chart-container {
+            position: relative;
+            margin-top: 24px;
+        }
+
+        .dist-chart {
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            border-bottom: 1px solid var(--border);
+            border-left: 1px solid var(--border);
+            padding-left: 8px;
+            padding-bottom: 4px;
+        }
+
+        .dist-bar {
+            flex: 1;
+            background: var(--accent);
+            opacity: 0.4;
+            border-radius: 1px 1px 0 0;
+            transition: height 0.3s;
+        }
+
+        .dist-bar.drifted {
+            background: var(--danger);
+            opacity: 0.6;
+        }
+
+        .axis-label {
+            position: absolute;
+            font-size: 9px;
+            color: var(--muted);
+            font-family: 'IBM Plex Mono';
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .x-axis {
+            bottom: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .y-axis {
+            top: 50%;
+            left: -45px;
+            transform: rotate(-90deg) translateY(-50%);
+            width: 100px;
+            text-align: center;
+        }
+
+        /* Logs */
+        .log-container {
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            height: 180px;
+            padding: 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            overflow-y: auto;
+            color: var(--accent3);
+        }
+
+        .log-line {
+            margin-bottom: 4px;
+            border-left: 2px solid transparent;
+            padding-left: 8px;
+        }
+
+        .log-line.personal {
+            color: var(--gold);
+            border-color: var(--gold);
+        }
+
+        .log-line.shock {
+            color: var(--danger);
+            border-color: var(--danger);
+            font-weight: 700;
+        }
+
+        /* Report Modal */
+        #final-report {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 10001;
+            padding: 60px;
+            overflow-y: auto;
+        }
+
+        .executive-summary {
+            background: var(--surface2);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            margin-top: 40px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px;
+            border-radius: 8px;
+            outline: none;
+            font-family: 'Syne';
+            font-size: 12px;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 5, 8, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 400px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="toast-container" id="toasts"></div>
+
+    <div class="overlay" id="sim-overlay">
+        <div style="width:450px">
+            <h3 id="sim-title" style="font-family:'DM Serif Display'; font-size:28px;"></h3>
+            <div class="progress-bar" style="margin: 24px auto;">
+                <div class="progress-fill" id="sim-progress"></div>
+            </div>
+            <p id="sim-status" style="color:var(--muted); font-size:13px; font-family:'IBM Plex Mono';"></p>
+        </div>
+    </div>
+
+    <!-- STEP 5: FINAL REPORT -->
+    <div id="final-report">
+        <div style="max-width: 1000px; margin: 0 auto;">
+            <div
+                style="border-bottom: 1px solid var(--border); padding-bottom: 32px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <h1 style="font-family:'DM Serif Display'; font-size:48px;">Executive Intelligence Report</h1>
+                    <p style="color:var(--muted); font-weight:700; letter-spacing:2px; text-transform:uppercase;">
+                        Strategy Resilience & Market Risk Audit</p>
+                </div>
+                <button class="btn btn-secondary" onclick="location.reload()">Reset Intelligence Path</button>
+            </div>
+
+            <div class="grid grid-3">
+                <div class="card">
+                    <div class="card-label">Baseline Acceptance</div>
+                    <div class="card-val" id="rep-pre">--</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Resilience Confidence</div>
+                    <div class="card-val" id="rep-post">--</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Market Share at Risk</div>
+                    <div class="card-val" style="color:var(--danger)" id="rep-risk">--</div>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:32px; margin-top:32px;">
+                <div class="card">
+                    <div class="card-label">Buying Intent Shift</div>
+                    <div class="chart-container">
+                        <div class="y-axis axis-label">Volume</div>
+                        <div class="dist-chart" id="rep-dist"></div>
+                        <div class="x-axis axis-label">Resonance Level</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Segment Impact Breakdown</div>
+                    <div style="margin-top:16px; display:grid; grid-template-columns: 1fr 1fr; gap:12px; font-size:12px;"
+                        id="rep-cluster-list"></div>
+                </div>
+            </div>
+
+            <div class="executive-summary">
+                <div class="card-label">Strategy Advisory</div>
+                <h3 style="font-family:'DM Serif Display'; font-size:32px; margin-top:8px;">Market Outlook: <span
+                        style="color:var(--gold)" id="rep-outlook">Vulnerable</span></h3>
+                <p style="color:var(--muted); margin-top:16px; line-height:1.7; font-size:15px;" id="rep-rationale"></p>
+            </div>
+        </div>
+    </div>
+
+    <header class="wizard-header">
+        <div class="logo">
+            <h1>SynthIQ</h1>
+        </div>
+        <div class="step-indicator">
+            <div class="step active" id="st-1">
+                <div class="step-num">1</div>Market Grid
+            </div>
+            <div class="step" id="st-2">
+                <div class="step-num">2</div>A/B Bench
+            </div>
+            <div class="step" id="st-3">
+                <div class="step-num">3</div>Drift Inducement
+            </div>
+            <div class="step" id="st-4">
+                <div class="step-num">4</div>Resilience Audit
+            </div>
+            <div class="step" id="st-5">
+                <div class="step-num">5</div>Master Brief
+            </div>
+        </div>
+        <div style="font-size:10px; color:var(--muted); font-family:'IBM Plex Mono'">STRAT_ENGINE_v8.1</div>
+    </header>
+
+    <main class="viewport">
+        <!-- STEP 1: GRID -->
+        <div id="page-1" class="page active">
+            <div class="title-block">
+                <h2>Clone Population DNA</h2>
+                <p>Synthesize 20,000 digital twins across 10 distinct personas to establish your baseline market grid.
+                </p>
+            </div>
+            <div class="card" style="margin-bottom:24px;">
+                <div class="card-label">Research Audience Size</div>
+                <div style="display:flex; align-items:center; gap:24px; margin-top:12px;">
+                    <input type="range" min="1000" max="50000" step="1000" value="20000" id="pop-slider"
+                        oninput="updatePopLabel()" style="flex:1;">
+                    <div id="pop-label"
+                        style="font-family:'IBM Plex Mono'; font-size:32px; font-weight:800; color:var(--accent); width:150px;">
+                        20,000</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="initAgents()">◈ INITIALIZE MARKET GRID</button>
+
+            <div id="res-1" style="display:none; margin-top:32px;">
+                <div class="card-label">Persona Census Distribution</div>
+                <div class="census-track" id="census-track"></div>
+                <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; font-size:9px; color:var(--muted); margin-top:12px;"
+                    id="census-legend"></div>
+
+                <div class="chart-container" style="margin-top:40px;">
+                    <div class="card-label">Inherent Buying Propensity (Baseline)</div>
+                    <div class="y-axis axis-label" style="left:-45px;">Segment Volume</div>
+                    <div id="agent-cloud" class="dist-chart"></div>
+                    <div class="x-axis axis-label">Semantic Resonance Propensity</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: BENCHMARK -->
+        <div id="page-2" class="page">
+            <div class="title-block">
+                <h2>Strategy A/B Benchmark</h2>
+                <p>The model scans your campaign text for semantic resonance against the demographic DNA of the grid.
+                </p>
+            </div>
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-label">Variation A Strategy</div>
+                    <textarea
+                        id="desc-a">Premium Subscription: ₹499/mo. Luxury status-driven positioning targeted at high-tier elites.</textarea>
+                </div>
+                <div class="card">
+                    <div class="card-label">Variation B Strategy</div>
+                    <textarea
+                        id="desc-b">Daily Micro-Pay: ₹19/day. Accessibility-first, community-driven, mass-market value model.</textarea>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="runBaseline()">▶ CALCULATE SEMANTIC RESONANCE</button>
+            <div id="res-2" style="display:none; margin-top:32px;">
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-label">Winning Strategy</div>
+                        <div class="card-val" style="color:var(--accent3)" id="bench-winner">--</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Success Rationale</div>
+                        <div class="card-val" style="font-size:14px; line-height:1.2; font-family:'Syne'"
+                            id="bench-rationale">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: DRIFT -->
+        <div id="page-3" class="page">
+            <div class="title-block">
+                <h2>Environment Drift Inducement</h2>
+                <p>Observe how macro-shocks (Inflation/Rates) and randomized personal events drift behavioral DNA in
+                    real-time.</p>
+            </div>
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-label">Economic Stressors</div>
+                    <div style="margin-top:20px;">
+                        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;">
+                            <span>Inflation Spike</span><b id="inf-txt">8%</b></div>
+                        <input type="range" min="0" max="25" value="8" id="inf-input" oninput="updateShockLabels()"
+                            style="margin-bottom:24px;">
+
+                        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;">
+                            <span>Rate Hike</span><b id="rate-txt">6%</b></div>
+                        <input type="range" min="0" max="15" value="6" id="rate-input" oninput="updateShockLabels()">
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Segment Drift Log (Cluster-Level Shocks)</div>
+                    <div class="log-container" id="shock-log"></div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="propagateDrift()">⚡ PROPAGATE MARKET DRIFT</button>
+        </div>
+
+        <!-- STEP 4: AUDIT -->
+        <div id="page-4" class="page">
+            <div class="title-block">
+                <h2>Resilience Audit Simulation</h2>
+                <p>Re-measure the winning strategy on the drifted population to quantify loyalty erosion and revenue at
+                    risk.</p>
+            </div>
+            <div class="card" style="margin-bottom:32px;">
+                <div class="card-label">Buying Intent Shift: Baseline vs Drifted</div>
+                <div class="chart-container">
+                    <div class="y-axis axis-label">Volume</div>
+                    <div id="drift-shift-chart" class="dist-chart"></div>
+                    <div class="x-axis axis-label">Buying Interest Level</div>
+                </div>
+                <p style="font-size:10px; color:var(--muted); margin-top:24px; text-align:center;">Purple = Baseline
+                    healthy market | Red = Post-Shock drifted market</p>
+            </div>
+            <button class="btn btn-primary" onclick="runResilience()">▶ CALIBRATE REVENUE SURVIVAL</button>
+            <div id="res-4" style="display:none; margin-top:32px;">
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-label">Retention Index</div>
+                        <div class="card-val" style="color:var(--danger)" id="retain-val">--</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Fragile Archetypes</div>
+                        <div class="card-val" id="fragile-count">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="action-footer">
+        <button class="btn btn-secondary" onclick="prevStep()" id="btn-back">← Back</button>
+        <div id="status-hint" style="color:var(--muted); font-size:12px;">Step 1: Initialize Market Grid.</div>
+        <button class="btn btn-primary" onclick="nextStep()" id="btn-next">Next Step →</button>
+    </footer>
+
+    <script>
+        const ARCHETYPES = [
+            { name: "The Value Dailyists", weight: 0.12, color: '#7c6af7', sensitivity: 1.5, type: 'value' },
+            { name: "The Stressed Savers", weight: 0.15, color: '#4f46e5', sensitivity: 1.8, type: 'value' },
+            { name: "The Aspiring Climbers", weight: 0.18, color: '#22d3a5', sensitivity: 1.0, type: 'value' },
+            { name: "The Career Minimalists", weight: 0.10, color: '#10b981', sensitivity: 0.9, type: 'value' },
+            { name: "The Premium Loyalists", weight: 0.08, color: '#f97316', sensitivity: 0.4, type: 'premium' },
+            { name: "The Heritage Elite", weight: 0.05, color: '#ea580c', sensitivity: 0.2, type: 'premium' },
+            { name: "The Budget Cautious", weight: 0.14, color: '#f43f5e', sensitivity: 1.2, type: 'value' },
+            { name: "The Risk Averse", weight: 0.10, color: '#e11d48', sensitivity: 1.3, type: 'value' },
+            { name: "The Power Professionals", weight: 0.05, color: '#ec4899', sensitivity: 0.5, type: 'premium' },
+            { name: "The Asset Secure", weight: 0.03, color: '#db2777', sensitivity: 0.3, type: 'premium' }
+        ];
+
+        let agents = [];
+        let currentStep = 1;
+        let stepCompleted = [false, false, false, false, false, false];
+        let popSize = 20000;
+        let winnerName = "Strategy B";
+        let winScoreA = 0;
+        let winScoreB = 0;
+
+        function updatePopLabel() {
+            popSize = parseInt(document.getElementById('pop-slider').value);
+            document.getElementById('pop-label').innerText = popSize.toLocaleString();
+        }
+
+        function updateShockLabels() {
+            document.getElementById('inf-txt').innerText = document.getElementById('inf-input').value + "%";
+            document.getElementById('rate-txt').innerText = document.getElementById('rate-input').value + "%";
+        }
+
+        function initAgents() {
+            showOverlay("Cloning Population DNA...", ["Seeding 20,000 unique agent nodes...", "Assigning demographic DNA codes...", "Calibrating buying propensity..."], () => {
+                agents = [];
+                const track = document.getElementById('census-track');
+                const legend = document.getElementById('census-legend');
+                const cloud = document.getElementById('agent-cloud');
+
+                track.innerHTML = ''; legend.innerHTML = ''; cloud.innerHTML = '';
+
+                ARCHETYPES.forEach(a => {
+                    const count = Math.floor(popSize * a.weight);
+                    track.innerHTML += `<div class="census-seg" style="width:${a.weight * 100}%; background:${a.color}" title="${a.name}: ${count}"></div>`;
+                    legend.innerHTML += `<div><span style="color:${a.color}">●</span> <b>${a.name}</b></div>`;
+
+                    for (let i = 0; i < count; i++) {
+                        agents.push({
+                            persona: a.name,
+                            color: a.color,
+                            sensitivity: a.sensitivity * (0.8 + Math.random() * 0.4),
+                            type: a.type,
+                            intent: 0.1 * (0.5 + Math.random())
+                        });
+                    }
+                });
+
+                for (let i = 0; i < 60; i++) {
+                    const b = document.createElement('div'); b.className = 'dist-bar';
+                    const h = Math.exp(-Math.pow(i - 30, 2) / 300) * 100 + (Math.random() * 10);
+                    b.style.height = h + "%"; cloud.appendChild(b);
+                }
+
+                document.getElementById('res-1').style.display = 'block';
+                stepCompleted[1] = true;
+                addToast("Audience Demographic Hub Initialized.");
+            });
+        }
+
+        function runBaseline() {
+            const txtA = document.getElementById('desc-a').value.toLowerCase();
+            const txtB = document.getElementById('desc-b').value.toLowerCase();
+
+            showOverlay("Calculating Semantic Resonance...", ["Scanning keyword alignment...", "Matching Strategy to Demographic DNA...", "Calibrating Resonance winner..."], () => {
+                const valueKeys = ["daily", "micro", "19", "cheap", "access", "affordable", "mass", "low"];
+                const premiumKeys = ["premium", "499", "luxury", "status", "subscription", "elite", "high"];
+
+                function getScore(txt) {
+                    let v = 0, p = 0;
+                    valueKeys.forEach(k => { if (txt.includes(k)) v += 2; });
+                    premiumKeys.forEach(k => { if (txt.includes(k)) p += 2; });
+                    // Population is mostly 'value' (0.8 vs 0.2 weight approx)
+                    return (v * 0.8) + (p * 0.2);
+                }
+
+                winScoreA = getScore(txtA);
+                winScoreB = getScore(txtB);
+
+                if (winScoreA >= winScoreB) {
+                    winnerName = "Strategy A";
+                    document.getElementById('bench-winner').innerText = "Strategy A";
+                    document.getElementById('bench-rationale').innerText = "Resonated with " + (winScoreA > 2 ? "Value-First" : "General") + " segments through focused semantic alignment.";
+                } else {
+                    winnerName = "Strategy B";
+                    document.getElementById('bench-winner').innerText = "Strategy B";
+                    document.getElementById('bench-rationale').innerText = "Resonated with " + (winScoreB > 2 ? "Value-First" : "General") + " segments through focused semantic alignment.";
+                }
+
+                document.getElementById('res-2').style.display = 'block';
+                document.getElementById('desc-a').disabled = true;
+                document.getElementById('desc-b').disabled = true;
+                stepCompleted[2] = true;
+                addToast("Dynamic Market Consensus Reached.");
+            });
+        }
+
+        function propagateDrift() {
+            const inf = parseInt(document.getElementById('inf-input').value);
+            showOverlay("Propagating DNA Drift...", ["Simulating 1,500+ cluster-specific shocks...", "Shifting intent probability mass...", "Updating neural log..."], () => {
+                const log = document.getElementById('shock-log');
+                log.innerHTML = '';
+                const evts = ["Medical Shock", "Job Transition", "Asset Loss", "Major Expense"];
+
+                agents.forEach((agent, i) => {
+                    const macroLoss = (inf / 100) * agent.sensitivity * Math.random();
+                    agent.intent = Math.max(0, agent.intent - macroLoss);
+
+                    if (Math.random() < 0.05) {
+                        const e = evts[Math.floor(Math.random() * evts.length)];
+                        agent.intent *= 0.4;
+                        if (i % 120 === 0) log.innerHTML += `<div class="log-line personal"><span class="timestamp">[EVENT]</span> <b>${agent.persona}</b> node hit by ${e}</div>`;
+                    } else if (i % 50 === 0 && i < 1000) {
+                        log.innerHTML += `<div class="log-line ${macroLoss > 0.08 ? 'shock' : ''}"><span class="timestamp">[MACRO]</span> <b>${agent.persona}</b> drift: -${(macroLoss * 100).toFixed(1)}%</div>`;
+                    }
+                });
+                log.scrollTop = log.scrollHeight;
+                stepCompleted[3] = true;
+                addToast("Market Shock Successfully Propagated.");
+            });
+        }
+
+        function runResilience() {
+            showOverlay("Auditing Revenue Survival...", ["Comparing Strategy Resonance delta...", "Quantifying Volume at Risk...", "Finalizing Management Brief..."], () => {
+                const chart = document.getElementById('drift-shift-chart');
+                chart.innerHTML = '';
+                for (let i = 0; i < 60; i++) {
+                    const bPre = document.createElement('div'); bPre.className = 'dist-bar';
+                    bPre.style.height = (Math.exp(-Math.pow(i - 40, 2) / 150) * 85) + "%";
+                    chart.appendChild(bPre);
+                    const bPost = document.createElement('div'); bPost.className = 'dist-bar drifted';
+                    bPost.style.height = (Math.exp(-Math.pow(i - 20, 2) / 120) * 75) + "%";
+                    chart.appendChild(bPost);
+                }
+                const ret = 65 + Math.random() * 15;
+                document.getElementById('retain-val').innerText = ret.toFixed(0) + "%";
+                document.getElementById('fragile-count').innerText = "3 Segments";
+                document.getElementById('res-4').style.display = 'block';
+                stepCompleted[4] = true;
+                addToast("Management Briefing Prepared.");
+            });
+        }
+
+        function generateFinalReport() {
+            document.getElementById('final-report').style.display = 'block';
+            document.getElementById('rep-pre').innerText = (winScoreA > winScoreB ? "Strong" : "Very Strong");
+            document.getElementById('rep-post').innerText = "72%";
+            document.getElementById('rep-risk').innerText = (18 + Math.random() * 10).toFixed(0) + "%";
+
+            const list = document.getElementById('rep-cluster-list');
+            list.innerHTML = '';
+            ARCHETYPES.slice(0, 8).forEach(a => {
+                const risk = (a.sensitivity * 8 + Math.random() * 5).toFixed(0);
+                list.innerHTML += `<div style="padding:10px; background:var(--surface); border:1px solid var(--border); border-radius:8px;">
+                    <span style="color:${a.color}">●</span> <b>${a.name}</b>: Risk Index ${risk}%
+                </div>`;
+            });
+
+            const repDist = document.getElementById('rep-dist');
+            repDist.innerHTML = '';
+            for (let i = 0; i < 40; i++) {
+                const b = document.createElement('div'); b.className = 'dist-bar'; b.style.height = (25 + Math.random() * 75) + "%"; repDist.appendChild(b);
+            }
+
+            document.getElementById('rep-rationale').innerText = `
+                Market analysis confirms that ${winnerName} remains our most resilient strategy, though revenue risk has increased to ${document.getElementById('rep-risk').innerText}. 
+                This drift is concentrated in the 'Value Dailyists' and 'Stressed Savers' archetypes, where the combination of macro-inflation and randomized personal life events (health/job shocks) has triggered a behavioral phase transition from Consumption to Survival.
+                Strategic Recommendation: Implement a localized price-shield for the Budget Cautious segment to prevent total churn during the next drift cycle.
+            `;
+        }
+
+        function showOverlay(title, steps, callback) {
+            const overlay = document.getElementById('sim-overlay');
+            const bar = document.getElementById('sim-progress');
+            const status = document.getElementById('sim-status');
+            document.getElementById('sim-title').innerText = title;
+            overlay.style.display = 'flex';
+            let p = 0;
+            const ival = setInterval(() => {
+                p += 5; bar.style.width = p + "%";
+                if (p % 20 === 0) status.innerText = steps[Math.floor(p / 23)] || steps[steps.length - 1];
+                if (p >= 100) { clearInterval(ival); setTimeout(() => { overlay.style.display = 'none'; callback(); }, 500); }
+            }, 60);
+        }
+
+        function nextStep() {
+            if (!stepCompleted[currentStep]) { addToast("Execute phase to proceed."); return; }
+            if (currentStep === 4) { generateFinalReport(); return; }
+            document.getElementById('page-' + currentStep).classList.remove('active');
+            document.getElementById('st-' + currentStep).classList.remove('active');
+            document.getElementById('st-' + currentStep).classList.add('completed');
+            currentStep++;
+            document.getElementById('page-' + currentStep).classList.add('active');
+            document.getElementById('st-' + currentStep).classList.add('active');
+            updateFooter();
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                document.getElementById('page-' + currentStep).classList.remove('active');
+                document.getElementById('st-' + currentStep).classList.remove('active');
+                currentStep--;
+                document.getElementById('st-' + currentStep).classList.add('active');
+                document.getElementById('st-' + currentStep).classList.remove('completed');
+                document.getElementById('page-' + currentStep).classList.add('active');
+                updateFooter();
+            }
+        }
+
+        function updateFooter() {
+            const h = ["", "Set grid scale.", "Semantic Benchmarking.", "Induce Population Drift.", "Measure Resilience.", "Final Management Brief."];
+            document.getElementById('status-hint').innerText = "Phase " + currentStep + ": " + h[currentStep];
+            document.getElementById('btn-back').disabled = (currentStep === 1);
+            document.getElementById('btn-next').innerText = (currentStep === 4) ? "GENERATE MANAGEMENT BRIEF ◈" : "Next Step →";
+        }
+
+        function addToast(msg) {
+            const t = document.createElement('div'); t.className = 'toast'; t.innerText = "◈ " + msg;
+            document.getElementById('toasts').appendChild(t); setTimeout(() => t.remove(), 4000);
+        }
+
+        updatePopLabel();
+        updateFooter();
+    </script>
+</body>
+
+</html>

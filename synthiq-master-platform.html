@@ -2120,6 +2120,7 @@
 
                 let strategyText = "";
                 if (simMode === 'ab') {
+                    document.getElementById('res2-label1').innerText = "Optimal Strategy";
                     let totalA = 0, totalB = 0;
 
                     agents.forEach(a => {
@@ -2133,6 +2134,7 @@
                 }
 
                 else {
+                    document.getElementById('res2-label1').innerText = "Market Verdict";
                     document.getElementById('res2-val1').innerText = "High Interest";
                     let sum = 0;
 
@@ -2143,11 +2145,18 @@
                     strategyText = prod;
                 }
 
+                const getPersonaReaction = (score) => {
+                    if (score < 30) return "This makes zero sense for my lifestyle. I'm completely uninterested.";
+                    if (score < 50) return "I'm a bit skeptical. This doesn't seem to offer much value to me right now.";
+                    if (score < 75) return "It seems okay, though I have some minor reservations about the fit.";
+                    return "This resonates perfectly with my current priorities and lifestyle.";
+                };
+
                 agents.forEach(a => a.current = a.base);
                 document.getElementById('hero-name').innerText = heroAgent.name + " (" + heroAgent.type + ")";
 
                 document.getElementById('hero-demographics').innerText = `${heroAgent.age} yr | ${heroAgent.gender} | ${heroAgent.state}`;
-                document.getElementById('hero-verbatim').innerText = `"Considering my current lifestyle, I'm ${heroAgent.base.toFixed(0)}% certain about this. It seems to resonate with my priorities." `;
+                document.getElementById('hero-verbatim').innerText = `"${getPersonaReaction(heroAgent.base)}" (${heroAgent.base.toFixed(0)}% Certain)`;
                 updateInsightUI('hero-insight', getHeroInsight(heroAgent, heroAgent.base, strategyText));
                 document.getElementById('res-2').style.display = 'block';
                 stepCompleted[2] = true;
@@ -2623,11 +2632,34 @@
                 document.getElementById('ab-pref-b').innerText = "Challenged";
             }
 
+            const getProductIcon = (text) => {
+                const t = (text || "").toLowerCase();
+                if (t.includes('laptop') || t.includes('computer')) return '💻';
+                if (t.includes('phone') || t.includes('mobile')) return '📱';
+                if (t.includes('watch') || t.includes('wearable')) return '⌚';
+                if (t.includes('headphone') || t.includes('audio')) return '🎧';
+                if (t.includes('noodle') || t.includes('chings') || t.includes('food') || t.includes('schezwan')) return '🍜';
+                if (t.includes('shirt') || t.includes('cloth') || t.includes('apparel')) return '👕';
+                if (t.includes('chair') || t.includes('furniture')) return '🪑';
+                return '📦';
+            };
+
+            if (isAB) {
+                document.getElementById('ab-icon-a').innerText = getProductIcon(document.getElementById('desc-a').value);
+                document.getElementById('ab-icon-b').innerText = getProductIcon(document.getElementById('desc-b').value);
+            }
+
             // 3. Product Brief testing
-            const rawProdName = isAB ? (document.getElementById('name-a')?.value || "Concept A") : (document.getElementById('product-name')?.value || "Product Concept");
-            document.getElementById('pbrief-name').innerText = rawProdName;
+            const nameA = document.getElementById('name-a')?.value || "Concept A";
+            const nameB = document.getElementById('name-b')?.value || "Concept B";
+            const winA = document.getElementById('res2-val1').innerText.includes('A');
+            const winningName = isAB ? (winA ? nameA : nameB) : (document.getElementById('product-name')?.value || "Product Concept");
+            document.getElementById('pbrief-name').innerText = winningName;
             document.getElementById('pbrief-likelihood').innerText = avgIntent.toFixed(1) + "%";
             document.getElementById('pbrief-sentiment').innerText = (avgIntent * 1.2).toFixed(1) + "%";
+
+            const winningDesc = isAB ? (winA ? document.getElementById('desc-a').value : document.getElementById('desc-b').value) : document.getElementById('product-desc').value;
+            document.getElementById('pbrief-visual').innerHTML = `<div style="font-size:60px;">${getProductIcon(winningDesc)}</div>`;
 
             const concernsContainer = document.getElementById('pbrief-concerns');
             concernsContainer.innerHTML = "";
@@ -2644,7 +2676,11 @@
             renderAgeDonut();
             renderIncomeDonut();
             renderPersonalityRadar();
-            renderFeedbackThemes(avgIntent, resilience);
+
+            const txt = (isAB ? (document.getElementById('desc-a').value + " " + document.getElementById('desc-b').value) : document.getElementById('product-desc').value).toLowerCase();
+            const redFlags = ["broken", "unfit", "bad", "useless", "scam"];
+            const foundFlag = redFlags.some(f => txt.includes(f));
+            renderFeedbackThemes(avgIntent, resilience, foundFlag);
         }
 
         function renderAgeDonut() {
@@ -2779,22 +2815,53 @@
             container.innerHTML = svg;
         }
 
-        function renderFeedbackThemes(intent, res) {
+        function renderFeedbackThemes(intent, res, redFlag) {
             const dislikesList = document.getElementById('feedback-concerns');
             const likesList = document.getElementById('feedback-likes');
             const quotesBox = document.getElementById('feedback-quotes');
 
-            const likes = ["Intuitive Interface", "Cultural Alignment", "Premium Build", "Transparent Specs"];
-            const dislikes = ["Premium Pricing", "Support Lag", "Feature Complexity", "Wait Times"];
+            const isAB = (simMode === 'ab');
+            const winA = document.getElementById('res2-val1').innerText.includes('A');
+            const prodName = isAB ? (winA ? (document.getElementById('name-a')?.value || "Concept A") : (document.getElementById('name-b')?.value || "Concept B")) : (document.getElementById('product-name')?.value || "Product");
+            const txt = (isAB ? (document.getElementById('desc-a').value + " " + document.getElementById('desc-b').value) : document.getElementById('product-desc').value).toLowerCase();
+
+            let likes = ["Transparent Feedback", "Market Visibility"];
+            let dislikes = ["Market Stressors", "Price Sensitivity"];
+
+            if (redFlag) {
+                likes = ["Bold Honesty", "Niche Curiosity"];
+                dislikes = ["Fundamental Quality", "Utility Failure", "Trust Deficit"];
+            } else {
+                if (txt.includes('eco') || txt.includes('green') || txt.includes('solar')) likes.push("Environmental Fit");
+                if (txt.includes('premium') || txt.includes('luxury')) {
+                    likes.push("Status Alignment");
+                    dislikes.push("Exclusivity Barrier");
+                }
+                if (txt.includes('utility') || txt.includes('save') || txt.includes('daily') || txt.includes('budget')) {
+                    likes.push("Practical Utility");
+                    dislikes.push("Basic Aesthetics");
+                }
+                if (res > 70) likes.push("Macro Resilience");
+                else dislikes.push("Economic Fragility");
+            }
 
             likesList.innerHTML = likes.slice(0, 3).map(l => `<li class="feedback-item">✅ ${l}</li>`).join('');
             dislikesList.innerHTML = dislikes.slice(0, 3).map(d => `<li class="feedback-item">⚠️ ${d}</li>`).join('');
 
-            const quotes = [
-                "The product resonates with my local values, but the price hike makes me reconsider.",
-                "I appreciate the design but I'm worried about technical glitches mentioned in logs.",
-                "Concept A feels futuristic. If they fix the service delay, I'm definitely buying."
-            ];
+            const quotes = [];
+            if (redFlag) {
+                quotes.push(`"I don't understand why '${prodName}' is even being tested in this state."`);
+                quotes.push(`"This feels like a waste of resources given the current market stressors."`);
+            } else if (intent > 70) {
+                quotes.push(`"The ${prodName} perfectly solves my daily friction points. I'm ready to buy."`);
+                quotes.push(`"Finally, a brand that understands our local values and constraints."`);
+            } else if (intent > 40) {
+                quotes.push(`"I like the concept of ${prodName}, but the price hike makes me reconsider."`);
+                quotes.push(`"It's a good start, but I need more security before committing."`);
+            } else {
+                quotes.push(`"I don't see how ${prodName} adds value to my household right now."`);
+                quotes.push(`"The timing feels wrong for a launch like this."`);
+            }
 
             quotesBox.innerHTML = quotes.slice(0, 2).map(q => `<div class="quote-bubble">"${q}"</div>`).join('');
         }

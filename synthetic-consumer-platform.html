@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SynthIQ — Synthetic Consumer Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #09090f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --border: #2a2a38;
+    --accent: #7c6af7;
+    --accent2: #f97316;
+    --accent3: #22d3a5;
+    --text: #e8e8f0;
+    --muted: #7070a0;
+    --danger: #f43f5e;
+    --gold: #fbbf24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* LAYOUT */
+  .app { display: flex; height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  .logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .logo-mark {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo-sub {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
+    letter-spacing: 0.3px;
+  }
+
+  .nav-item:hover { color: var(--text); background: rgba(124,106,247,0.06); }
+
+  .nav-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(124,106,247,0.1);
+  }
+
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .nav-section {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 16px 24px 6px;
+    opacity: 0.6;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent3);
+    box-shadow: 0 0 8px var(--accent3);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* PAGE HEADER */
+  .page-header {
+    padding: 28px 36px 24px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(124,106,247,0.04) 0%, transparent 100%);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .page-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #8f7ff9; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,106,247,0.4); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+  /* CONTENT AREA */
+  .content { padding: 28px 36px; }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .tab {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(124,106,247,0.3); }
+
+  .card-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .card-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .card-delta {
+    font-size: 12px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .delta-up { color: var(--accent3); }
+  .delta-down { color: var(--danger); }
+
+  /* GRID LAYOUTS */
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* PERSONA CARDS */
+  .persona-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+
+  .persona-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .persona-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .persona-card.c1::before { background: linear-gradient(90deg, var(--accent), #a78bfa); }
+  .persona-card.c2::before { background: linear-gradient(90deg, var(--accent3), #34d399); }
+  .persona-card.c3::before { background: linear-gradient(90deg, var(--accent2), #fb923c); }
+  .persona-card.c4::before { background: linear-gradient(90deg, var(--danger), #fb7185); }
+  .persona-card.c5::before { background: linear-gradient(90deg, var(--gold), #fcd34d); }
+  .persona-card.c6::before { background: linear-gradient(90deg, #06b6d4, #67e8f9); }
+
+  .persona-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(124,106,247,0.4);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  .persona-card.selected {
+    border-color: var(--accent);
+    background: rgba(124,106,247,0.08);
+  }
+
+  .persona-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 12px;
+    background: var(--surface2);
+  }
+
+  .persona-name {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 2px;
+  }
+
+  .persona-meta {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .persona-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+  }
+
+  .tag-purple { background: rgba(124,106,247,0.15); color: #a78bfa; }
+  .tag-green { background: rgba(34,211,165,0.12); color: var(--accent3); }
+  .tag-orange { background: rgba(249,115,22,0.12); color: #fb923c; }
+  .tag-red { background: rgba(244,63,94,0.12); color: #fb7185; }
+  .tag-gold { background: rgba(251,191,36,0.12); color: var(--gold); }
+  .tag-cyan { background: rgba(6,182,212,0.12); color: #22d3ee; }
+
+  /* SCORE BARS */
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 11px;
+  }
+
+  .score-label { width: 100px; color: var(--muted); }
+  .score-bar-bg {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+  .score-val { width: 28px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 10px; }
+
+  /* CAMPAIGN BUILDER */
+  .form-group { margin-bottom: 18px; }
+
+  .form-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: block;
+    font-weight: 600;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124,106,247,0.1);
+  }
+
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  .form-select option { background: var(--surface2); }
+
+  /* RANGE SLIDER */
+  .slider-group { display: flex; align-items: center; gap: 14px; }
+  .slider {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(124,106,247,0.5);
+  }
+  .slider-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    width: 40px;
+    text-align: right;
+  }
+
+  /* CHANNEL SELECTOR */
+  .channel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+  .channel-btn {
+    padding: 10px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface2);
+  }
+
+  .channel-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  .channel-btn.selected {
+    border-color: var(--accent);
+    background: rgba(124,106,247,0.1);
+    color: var(--accent);
+  }
+
+  .channel-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+  /* SIMULATION PANEL */
+  .sim-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+
+  .progress-container { margin-bottom: 20px; }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    transition: width 0.3s ease;
+    position: relative;
+  }
+
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 20px; height: 100%;
+    background: rgba(255,255,255,0.3);
+    animation: shimmer 1s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-20px); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateX(10px); opacity: 0; }
+  }
+
+  /* RESULTS CHARTS */
+  .chart-container {
+    position: relative;
+    height: 200px;
+    margin-bottom: 8px;
+  }
+
+  /* BAR CHART */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 100%;
+    padding-bottom: 24px;
+  }
+
+  .bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    cursor: pointer;
+  }
+
+  .bar:hover::after {
+    content: attr(data-val);
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    white-space: nowrap;
+  }
+
+  .bar-label {
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  /* HEAT MAP */
+  .heatmap { display: grid; gap: 3px; }
+  .heatmap-row { display: flex; gap: 3px; align-items: center; }
+  .heatmap-cell {
+    width: 28px; height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .heatmap-cell:hover { transform: scale(1.15); z-index: 1; }
+  .heatmap-label { font-size: 10px; color: var(--muted); width: 60px; }
+  .heatmap-col-labels { display: flex; gap: 3px; padding-left: 63px; margin-bottom: 4px; }
+  .heatmap-col-label { width: 28px; font-size: 9px; text-align: center; color: var(--muted); }
+
+  /* FUNNEL */
+  .funnel { display: flex; flex-direction: column; gap: 6px; }
+  .funnel-stage {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: var(--surface2);
+    position: relative;
+    overflow: hidden;
+  }
+  .funnel-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    border-radius: 8px;
+    opacity: 0.12;
+    transition: width 1.2s ease;
+  }
+  .funnel-label { font-size: 12px; font-weight: 600; z-index: 1; flex: 1; }
+  .funnel-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1;
+  }
+  .funnel-pct {
+    font-size: 10px;
+    color: var(--muted);
+    z-index: 1;
+    width: 40px;
+    text-align: right;
+  }
+
+  /* INSIGHT CARDS */
+  .insight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: all 0.2s;
+  }
+  .insight-card:hover { border-color: rgba(124,106,247,0.3); }
+  .insight-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .insight-text { font-size: 13px; line-height: 1.5; }
+  .insight-title { font-weight: 700; margin-bottom: 4px; }
+  .insight-body { color: var(--muted); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    width: 560px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .modal-title { font-family: 'DM Serif Display', serif; font-size: 22px; }
+  .modal-close {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { color: var(--text); border-color: var(--text); }
+
+  /* NOTIFICATION */
+  .notif {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 13px;
+    z-index: 2000;
+    box-shadow: 0 4px 24px rgba(124,106,247,0.3);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 320px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .notif.show { transform: translateY(0); opacity: 1; }
+
+  /* INLINE MONO */
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* SCROLL */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ANIMATED ENTER */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.4s ease forwards; }
+  .fade-up-d1 { animation-delay: 0.05s; opacity: 0; }
+  .fade-up-d2 { animation-delay: 0.1s; opacity: 0; }
+  .fade-up-d3 { animation-delay: 0.15s; opacity: 0; }
+  .fade-up-d4 { animation-delay: 0.2s; opacity: 0; }
+  .fade-up-d5 { animation-delay: 0.25s; opacity: 0; }
+  .fade-up-d6 { animation-delay: 0.3s; opacity: 0; }
+
+  /* BADGE */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .badge-green { background: rgba(34,211,165,0.15); color: var(--accent3); }
+  .badge-purple { background: rgba(124,106,247,0.15); color: #a78bfa; }
+  .badge-orange { background: rgba(249,115,22,0.15); color: #fb923c; }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+  .data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(42,42,56,0.5);
+    color: var(--text);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(124,106,247,0.04); }
+
+  /* SPLIT LAYOUT */
+  .split { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+  .full-width { grid-column: 1 / -1; }
+
+  /* TOOLTIP-LIKE LABELS */
+  .metric-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* PAGE VISIBILITY */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* GLOW EFFECT ON ACCENT NUMBERS */
+  .glow-purple { text-shadow: 0 0 20px rgba(124,106,247,0.5); color: var(--accent); }
+  .glow-green { text-shadow: 0 0 20px rgba(34,211,165,0.5); color: var(--accent3); }
+  .glow-orange { text-shadow: 0 0 20px rgba(249,115,22,0.4); color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">SynthIQ</div>
+      <div class="logo-sub">Consumer Intelligence</div>
+    </div>
+
+    <div class="nav-section">Workspace</div>
+    <div class="nav-item active" onclick="navigate('dashboard')">
+      <span class="nav-icon">◈</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="navigate('personas')">
+      <span class="nav-icon">◎</span> Persona Engine
+    </div>
+    <div class="nav-item" onclick="navigate('campaign')">
+      <span class="nav-icon">⬡</span> Campaign Builder
+    </div>
+    <div class="nav-item" onclick="navigate('simulation')">
+      <span class="nav-icon">⟳</span> Simulation
+    </div>
+    <div class="nav-item" onclick="navigate('results')">
+      <span class="nav-icon">◉</span> Results & Insights
+    </div>
+
+    <div class="nav-section" style="margin-top:8px">Analysis</div>
+    <div class="nav-item" onclick="navigate('segments')">
+      <span class="nav-icon">⊞</span> Segment Heatmap
+    </div>
+    <div class="nav-item" onclick="navigate('optimizer')">
+      <span class="nav-icon">◆</span> Budget Optimizer
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        <span>Engine Online · v2.4.1</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main" id="mainContent">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Overview</div>
+          <div class="page-subtitle">Last simulation ran 2 hours ago · 12,400 personas processed</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" onclick="navigate('campaign')">+ New Campaign</button>
+          <button class="btn btn-primary" onclick="navigate('simulation')">▶ Run Simulation</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="grid-4 fade-up fade-up-d1" style="margin-bottom:28px">
+          <div class="card">
+            <div class="card-title">Total Personas</div>
+            <div class="card-value glow-purple">12,400</div>
+            <div class="card-delta delta-up">↑ 2,400 from last run</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Predicted ROAS</div>
+            <div class="card-value glow-green">4.7×</div>
+            <div class="card-delta delta-up">↑ 0.8× vs baseline</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Est. CAC</div>
+            <div class="card-value">$18.40</div>
+            <div class="card-delta delta-down">↓ 12% optimized</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Top Conversion</div>
+            <div class="card-value glow-orange">34.2%</div>
+            <div class="card-delta delta-up">Instagram · Millennials</div>
+          </div>
+        </div>
+
+        <div class="split">
+          <div>
+            <div class="section-title fade-up fade-up-d2">Campaign Conversion Funnel</div>
+            <div class="card fade-up fade-up-d2" style="margin-bottom:20px">
+              <div class="funnel">
+                <div class="funnel-stage">
+                  <div class="funnel-fill" style="width:100%;background:var(--accent)"></div>
+                  <div class="funnel-label">Awareness</div>
+                  <div class="funnel-val mono">12,400</div>
+                  <div class="funnel-pct">100%</div>
+                </div>
+                <div class="funnel-stage">
+                  <div class="funnel-fill" id="f2fill" style="width:0%;background:var(--accent)"></div>
+                  <div class="funnel-label">Interest</div>
+                  <div class="funnel-val mono">6,882</div>
+                  <div class="funnel-pct">55.5%</div>
+                </div>
+                <div class="funnel-stage">
+                  <div class="funnel-fill" id="f3fill" style="width:0%;background:var(--accent3)"></div>
+                  <div class="funnel-label">Consideration</div>
+                  <div class="funnel-val mono">3,410</div>
+                  <div class="funnel-pct">27.5%</div>
+                </div>
+                <div class="funnel-stage">
+                  <div class="funnel-fill" id="f4fill" style="width:0%;background:var(--accent3)"></div>
+                  <div class="funnel-label">Intent</div>
+                  <div class="funnel-val mono">1,798</div>
+                  <div class="funnel-pct">14.5%</div>
+                </div>
+                <div class="funnel-stage">
+                  <div class="funnel-fill" id="f5fill" style="width:0%;background:var(--accent2)"></div>
+                  <div class="funnel-label">Conversion</div>
+                  <div class="funnel-val mono" style="color:var(--accent2)">620</div>
+                  <div class="funnel-pct" style="color:var(--accent2)">5.0%</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-title fade-up fade-up-d3">Channel Performance Forecast</div>
+            <div class="card fade-up fade-up-d3">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Channel</th>
+                    <th>Est. CTR</th>
+                    <th>Conv. Rate</th>
+                    <th>ROAS</th>
+                    <th>Confidence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>📸 Instagram</td>
+                    <td class="mono">4.8%</td>
+                    <td class="mono">6.2%</td>
+                    <td class="mono glow-green">5.1×</td>
+                    <td><span class="badge badge-green">High</span></td>
+                  </tr>
+                  <tr>
+                    <td>🔍 Google Search</td>
+                    <td class="mono">6.1%</td>
+                    <td class="mono">5.8%</td>
+                    <td class="mono">4.9×</td>
+                    <td><span class="badge badge-green">High</span></td>
+                  </tr>
+                  <tr>
+                    <td>✉️ Email</td>
+                    <td class="mono">2.9%</td>
+                    <td class="mono">4.1%</td>
+                    <td class="mono">3.8×</td>
+                    <td><span class="badge badge-purple">Med</span></td>
+                  </tr>
+                  <tr>
+                    <td>🎵 TikTok</td>
+                    <td class="mono">3.4%</td>
+                    <td class="mono">2.9%</td>
+                    <td class="mono">2.8×</td>
+                    <td><span class="badge badge-orange">Low</span></td>
+                  </tr>
+                  <tr>
+                    <td>🔗 LinkedIn</td>
+                    <td class="mono">1.8%</td>
+                    <td class="mono">3.7%</td>
+                    <td class="mono">4.2×</td>
+                    <td><span class="badge badge-purple">Med</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-title fade-up fade-up-d2">Active Archetypes</div>
+            <div class="fade-up fade-up-d2" style="display:flex;flex-direction:column;gap:10px">
+              <div class="persona-card c1 selected" onclick="openPersonaModal('Emily')">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                  <div>
+                    <div class="persona-avatar">👩‍💼</div>
+                    <div class="persona-name">Emily Chen</div>
+                    <div class="persona-meta">34 · Urban Professional · $72K</div>
+                  </div>
+                  <span class="badge badge-green">Active</span>
+                </div>
+                <div class="persona-tags">
+                  <span class="tag tag-purple">value-driven</span>
+                  <span class="tag tag-green">eco-conscious</span>
+                </div>
+                <div class="score-row">
+                  <div class="score-label">Purchase Prob.</div>
+                  <div class="score-bar-bg"><div class="score-bar-fill" style="width:78%;background:var(--accent)"></div></div>
+                  <div class="score-val">78%</div>
+                </div>
+              </div>
+
+              <div class="persona-card c2" onclick="openPersonaModal('Marcus')">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                  <div>
+                    <div class="persona-avatar">👨‍🎓</div>
+                    <div class="persona-name">Marcus Williams</div>
+                    <div class="persona-meta">26 · Student/Freelancer · $28K</div>
+                  </div>
+                  <span class="badge badge-green">Active</span>
+                </div>
+                <div class="persona-tags">
+                  <span class="tag tag-orange">price-sensitive</span>
+                  <span class="tag tag-cyan">tech-early-adopter</span>
+                </div>
+                <div class="score-row">
+                  <div class="score-label">Purchase Prob.</div>
+                  <div class="score-bar-bg"><div class="score-bar-fill" style="width:42%;background:var(--accent3)"></div></div>
+                  <div class="score-val">42%</div>
+                </div>
+              </div>
+
+              <div class="persona-card c3" onclick="navigate('personas')">
+                <div style="text-align:center;padding:8px 0;color:var(--muted);font-size:12px">
+                  <div style="font-size:24px;margin-bottom:4px">+4</div>
+                  more archetypes · <span style="color:var(--accent);cursor:pointer">View All</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERSONAS PAGE -->
+    <div class="page" id="page-personas">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Persona Engine</div>
+          <div class="page-subtitle">6 active archetypes · Generated via VAE model</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" onclick="showNotif('🧬 Generating 3 new personas...')">+ Generate More</button>
+          <button class="btn btn-primary" onclick="showNotif('✅ Personas exported to campaign')">Export to Campaign</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="persona-grid">
+          <!-- Persona cards with all detail -->
+          <div class="persona-card c1 fade-up fade-up-d1" onclick="openPersonaModal('Emily')">
+            <div class="persona-avatar">👩‍💼</div>
+            <div class="persona-name">Emily Chen</div>
+            <div class="persona-meta">34 · Urban Professional · $72K/yr · Mumbai</div>
+            <div class="persona-tags">
+              <span class="tag tag-purple">value-driven</span>
+              <span class="tag tag-green">eco-conscious</span>
+              <span class="tag tag-cyan">instagram-first</span>
+            </div>
+            <div class="score-row"><div class="score-label">Purchase Prob.</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:78%;background:var(--accent)"></div></div><div class="score-val">78%</div></div>
+            <div class="score-row"><div class="score-label">Brand Loyalty</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:67%;background:#a78bfa"></div></div><div class="score-val">67%</div></div>
+            <div class="score-row"><div class="score-label">Price Sensitivity</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:45%;background:var(--accent3)"></div></div><div class="score-val">45%</div></div>
+            <div class="score-row"><div class="score-label">Social Influence</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:82%;background:var(--accent2)"></div></div><div class="score-val">82%</div></div>
+            <div style="margin-top:10px;font-size:11px;color:var(--muted)">Triggers: peer reviews · 15% discount · sustainability claims</div>
+          </div>
+
+          <div class="persona-card c2 fade-up fade-up-d2" onclick="openPersonaModal('Marcus')">
+            <div class="persona-avatar">👨‍🎓</div>
+            <div class="persona-name">Marcus Williams</div>
+            <div class="persona-meta">26 · Freelancer · $28K/yr · Tier-2 City</div>
+            <div class="persona-tags">
+              <span class="tag tag-orange">price-sensitive</span>
+              <span class="tag tag-cyan">early-adopter</span>
+              <span class="tag tag-purple">FOMO-driven</span>
+            </div>
+            <div class="score-row"><div class="score-label">Purchase Prob.</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:42%;background:var(--accent3)"></div></div><div class="score-val">42%</div></div>
+            <div class="score-row"><div class="score-label">Brand Loyalty</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:28%;background:#a78bfa"></div></div><div class="score-val">28%</div></div>
+            <div class="score-row"><div class="score-label">Price Sensitivity</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:91%;background:var(--accent3)"></div></div><div class="score-val">91%</div></div>
+            <div class="score-row"><div class="score-label">Social Influence</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:55%;background:var(--accent2)"></div></div><div class="score-val">55%</div></div>
+            <div style="margin-top:10px;font-size:11px;color:var(--muted)">Triggers: limited-time offer · YouTube reviews · free trials</div>
+          </div>
+
+          <div class="persona-card c3 fade-up fade-up-d3" onclick="openPersonaModal('Priya')">
+            <div class="persona-avatar">👩‍🔬</div>
+            <div class="persona-name">Priya Nair</div>
+            <div class="persona-meta">41 · Senior Manager · $120K/yr · Metro</div>
+            <div class="persona-tags">
+              <span class="tag tag-gold">premium-seeker</span>
+              <span class="tag tag-purple">quality-focused</span>
+              <span class="tag tag-green">research-heavy</span>
+            </div>
+            <div class="score-row"><div class="score-label">Purchase Prob.</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:61%;background:var(--accent2)"></div></div><div class="score-val">61%</div></div>
+            <div class="score-row"><div class="score-label">Brand Loyalty</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:84%;background:#a78bfa"></div></div><div class="score-val">84%</div></div>
+            <div class="score-row"><div class="score-label">Price Sensitivity</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:18%;background:var(--accent3)"></div></div><div class="score-val">18%</div></div>
+            <div class="score-row"><div class="score-label">Social Influence</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:39%;background:var(--accent2)"></div></div><div class="score-val">39%</div></div>
+            <div style="margin-top:10px;font-size:11px;color:var(--muted)">Triggers: expert endorsements · premium positioning · long-form content</div>
+          </div>
+
+          <div class="persona-card c4 fade-up fade-up-d4" onclick="openPersonaModal('Ravi')">
+            <div class="persona-avatar">👨‍👨‍👧</div>
+            <div class="persona-name">Ravi Sharma</div>
+            <div class="persona-meta">47 · Family Man · $55K/yr · Suburban</div>
+            <div class="persona-tags">
+              <span class="tag tag-red">risk-averse</span>
+              <span class="tag tag-orange">family-first</span>
+              <span class="tag tag-green">trust-driven</span>
+            </div>
+            <div class="score-row"><div class="score-label">Purchase Prob.</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:35%;background:var(--danger)"></div></div><div class="score-val">35%</div></div>
+            <div class="score-row"><div class="score-label">Brand Loyalty</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:76%;background:#a78bfa"></div></div><div class="score-val">76%</div></div>
+            <div class="score-row"><div class="score-label">Price Sensitivity</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:62%;background:var(--accent3)"></div></div><div class="score-val">62%</div></div>
+            <div class="score-row"><div class="score-label">Social Influence</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:44%;background:var(--accent2)"></div></div><div class="score-val">44%</div></div>
+            <div style="margin-top:10px;font-size:11px;color:var(--muted)">Triggers: testimonials · money-back guarantee · brand reputation</div>
+          </div>
+
+          <div class="persona-card c5 fade-up fade-up-d5" onclick="openPersonaModal('Zara')">
+            <div class="persona-avatar">👩‍🎨</div>
+            <div class="persona-name">Zara Khan</div>
+            <div class="persona-meta">22 · Gen-Z Creator · $18K/yr · Urban</div>
+            <div class="persona-tags">
+              <span class="tag tag-gold">trend-chaser</span>
+              <span class="tag tag-cyan">TikTok-native</span>
+              <span class="tag tag-purple">viral-prone</span>
+            </div>
+            <div class="score-row"><div class="score-label">Purchase Prob.</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:55%;background:var(--gold)"></div></div><div class="score-val">55%</div></div>
+            <div class="score-row"><div class="score-label">Brand Loyalty</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:21%;background:#a78bfa"></div></div><div class="score-val">21%</div></div>
+            <div class="score-row"><div class="score-label">Price Sensitivity</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:74%;background:var(--accent3)"></div></div><div class="score-val">74%</div></div>
+            <div class="score-row"><div class="score-label">Social Influence</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:96%;background:var(--accent2)"></div></div><div class="score-val">96%</div></div>
+            <div style="margin-top:10px;font-size:11px;color:var(--muted)">Triggers: influencer UGC · aesthetic branding · peer virality</div>
+          </div>
+
+          <div class="persona-card c6 fade-up fade-up-d6" onclick="openPersonaModal('David')">
+            <div class="persona-avatar">👨‍💻</div>
+            <div class="persona-name">David Park</div>
+            <div class="persona-meta">38 · Tech Lead · $95K/yr · Remote</div>
+            <div class="persona-tags">
+              <span class="tag tag-cyan">data-driven</span>
+              <span class="tag tag-purple">ad-skeptic</span>
+              <span class="tag tag-green">ROI-focused</span>
+            </div>
+            <div class="score-row"><div class="score-label">Purchase Prob.</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:48%;background:#22d3ee"></div></div><div class="score-val">48%</div></div>
+            <div class="score-row"><div class="score-label">Brand Loyalty</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:52%;background:#a78bfa"></div></div><div class="score-val">52%</div></div>
+            <div class="score-row"><div class="score-label">Price Sensitivity</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:38%;background:var(--accent3)"></div></div><div class="score-val">38%</div></div>
+            <div class="score-row"><div class="score-label">Social Influence</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:29%;background:var(--accent2)"></div></div><div class="score-val">29%</div></div>
+            <div style="margin-top:10px;font-size:11px;color:var(--muted)">Triggers: technical specs · product demos · developer communities</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMPAIGN BUILDER -->
+    <div class="page" id="page-campaign">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Campaign Builder</div>
+          <div class="page-subtitle">Configure your campaign parameters for simulation</div>
+        </div>
+        <button class="btn btn-primary" onclick="navigate('simulation');startSim()">▶ Run Simulation</button>
+      </div>
+
+      <div class="content">
+        <div class="grid-2">
+          <div>
+            <div class="section-title">Campaign Brief</div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="form-group">
+                <label class="form-label">Campaign Name</label>
+                <input class="form-input" type="text" value="Q2 2026 Product Launch — Premium Tier" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Product / Service</label>
+                <input class="form-input" type="text" value="SaaS Productivity Tool — Enterprise" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Campaign Objective</label>
+                <select class="form-select">
+                  <option selected>Lead Generation</option>
+                  <option>Brand Awareness</option>
+                  <option>Direct Conversion</option>
+                  <option>Retargeting</option>
+                  <option>App Install</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Creative Angle</label>
+                <select class="form-select">
+                  <option selected>Emotional Appeal (FOMO + aspiration)</option>
+                  <option>Rational/Feature-led</option>
+                  <option>Social Proof</option>
+                  <option>Problem-Solution</option>
+                  <option>Humor / Entertainment</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Brief Description</label>
+                <textarea class="form-textarea">Targeting high-income urban professionals with a premium SaaS offer. Emphasize time-saving, status, and productivity ROI. Anchor on $99/mo with annual discount hook.</textarea>
+              </div>
+            </div>
+
+            <div class="section-title">Pricing Strategy</div>
+            <div class="card">
+              <div class="form-group">
+                <label class="form-label">Price Point</label>
+                <div class="slider-group">
+                  <input type="range" class="slider" min="9" max="499" value="99" oninput="this.nextElementSibling.textContent='$'+this.value">
+                  <div class="slider-val">$99</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Discount Threshold</label>
+                <div class="slider-group">
+                  <input type="range" class="slider" min="0" max="50" value="20" oninput="this.nextElementSibling.textContent=this.value+'%'">
+                  <div class="slider-val">20%</div>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Pricing Model</label>
+                <select class="form-select">
+                  <option>Subscription (Monthly)</option>
+                  <option selected>Freemium → Paid</option>
+                  <option>One-time Purchase</option>
+                  <option>Tiered Pricing</option>
+                  <option>Anchor + Upsell</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-title">Channel Mix</div>
+            <div class="card" style="margin-bottom:16px">
+              <label class="form-label" style="margin-bottom:10px">Select Active Channels</label>
+              <div class="channel-grid" style="margin-bottom:16px">
+                <div class="channel-btn selected" onclick="this.classList.toggle('selected')"><span class="channel-icon">📸</span>Instagram</div>
+                <div class="channel-btn selected" onclick="this.classList.toggle('selected')"><span class="channel-icon">🔍</span>Google</div>
+                <div class="channel-btn" onclick="this.classList.toggle('selected')"><span class="channel-icon">🎵</span>TikTok</div>
+                <div class="channel-btn selected" onclick="this.classList.toggle('selected')"><span class="channel-icon">✉️</span>Email</div>
+                <div class="channel-btn" onclick="this.classList.toggle('selected')"><span class="channel-icon">🔗</span>LinkedIn</div>
+                <div class="channel-btn" onclick="this.classList.toggle('selected')"><span class="channel-icon">🐦</span>Twitter/X</div>
+                <div class="channel-btn" onclick="this.classList.toggle('selected')"><span class="channel-icon">📱</span>Push/SMS</div>
+                <div class="channel-btn" onclick="this.classList.toggle('selected')"><span class="channel-icon">🎥</span>YouTube</div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Total Budget</label>
+                <div class="slider-group">
+                  <input type="range" class="slider" min="500" max="100000" step="500" value="25000" oninput="this.nextElementSibling.textContent='$'+Number(this.value).toLocaleString()">
+                  <div class="slider-val" style="width:70px">$25,000</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-title">Simulation Settings</div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="form-group">
+                <label class="form-label">Persona Sample Size</label>
+                <div class="slider-group">
+                  <input type="range" class="slider" min="1000" max="50000" step="1000" value="12000" oninput="this.nextElementSibling.textContent=Number(this.value).toLocaleString()">
+                  <div class="slider-val" style="width:60px">12,000</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Market Saturation</label>
+                <div class="slider-group">
+                  <input type="range" class="slider" min="0" max="100" value="42" oninput="this.nextElementSibling.textContent=this.value+'%'">
+                  <div class="slider-val">42%</div>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Scenario Mode</label>
+                <select class="form-select">
+                  <option selected>Baseline + 3 Counterfactuals</option>
+                  <option>Optimistic / Pessimistic / Base</option>
+                  <option>Single Scenario</option>
+                  <option>Monte Carlo (100 runs)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="section-title">Target Personas</div>
+            <div class="card">
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <div class="channel-btn selected" style="flex:none;padding:8px 14px;font-size:11px" onclick="this.classList.toggle('selected')">👩‍💼 Emily Chen</div>
+                <div class="channel-btn selected" style="flex:none;padding:8px 14px;font-size:11px" onclick="this.classList.toggle('selected')">👨‍🎓 Marcus Williams</div>
+                <div class="channel-btn selected" style="flex:none;padding:8px 14px;font-size:11px" onclick="this.classList.toggle('selected')">👩‍🔬 Priya Nair</div>
+                <div class="channel-btn" style="flex:none;padding:8px 14px;font-size:11px" onclick="this.classList.toggle('selected')">👨‍👨‍👧 Ravi Sharma</div>
+                <div class="channel-btn" style="flex:none;padding:8px 14px;font-size:11px" onclick="this.classList.toggle('selected')">👩‍🎨 Zara Khan</div>
+                <div class="channel-btn" style="flex:none;padding:8px 14px;font-size:11px" onclick="this.classList.toggle('selected')">👨‍💻 David Park</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIMULATION PAGE -->
+    <div class="page" id="page-simulation">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Simulation Engine</div>
+          <div class="page-subtitle" id="simSubtitle">Ready to run · 3 scenarios configured</div>
+        </div>
+        <button class="btn btn-primary" id="simBtn" onclick="startSim()">▶ Start Simulation</button>
+      </div>
+
+      <div class="content">
+        <div id="simIdle">
+          <div class="card" style="text-align:center;padding:48px;margin-bottom:24px">
+            <div style="font-size:48px;margin-bottom:16px">⟳</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:8px">Simulation Ready</div>
+            <div style="color:var(--muted);font-size:13px;margin-bottom:24px">12,000 synthetic personas · 3 scenario variants · ~90 seconds estimated</div>
+            <button class="btn btn-primary" style="margin:0 auto" onclick="startSim()">▶ Launch Simulation</button>
+          </div>
+          <div class="grid-3">
+            <div class="card">
+              <div class="card-title">Scenario A — Baseline</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:6px">Current config: Instagram + Google, $99 freemium, 20% discount trigger</div>
+              <div style="margin-top:12px"><span class="badge badge-purple">Primary</span></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Scenario B — Aggressive Price</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:6px">Drop to $79, add TikTok, increase discount to 35%</div>
+              <div style="margin-top:12px"><span class="badge badge-green">Counterfactual</span></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Scenario C — Premium Anchor</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:6px">$149 anchor → $99, LinkedIn focus, rational appeal</div>
+              <div style="margin-top:12px"><span class="badge badge-orange">Counterfactual</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="simRunning" style="display:none">
+          <div class="sim-status">
+            <div class="status-dot"></div>
+            <span id="simStatusText">Initializing persona cohorts...</span>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-label"><span>Scenario A — Baseline</span><span id="p1pct">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="p1" style="width:0%"></div></div>
+          </div>
+          <div class="progress-container">
+            <div class="progress-label"><span>Scenario B — Aggressive Price</span><span id="p2pct">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="p2" style="width:0%"></div></div>
+          </div>
+          <div class="progress-container">
+            <div class="progress-label"><span>Scenario C — Premium Anchor</span><span id="p3pct">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="p3" style="width:0%"></div></div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <div class="card-title">Live Agent Activity Log</div>
+            <div id="logArea" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);height:200px;overflow-y:auto;padding-top:8px;line-height:1.8"></div>
+          </div>
+        </div>
+
+        <div id="simDone" style="display:none">
+          <div class="card" style="text-align:center;padding:36px;border-color:var(--accent3);background:rgba(34,211,165,0.04)">
+            <div style="font-size:40px;margin-bottom:12px">✓</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px;color:var(--accent3)">Simulation Complete</div>
+            <div style="color:var(--muted);font-size:13px;margin-bottom:20px">36,000 interactions modeled across 3 scenarios in 12.4 seconds</div>
+            <button class="btn btn-primary" onclick="navigate('results')">View Results & Insights →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS PAGE -->
+    <div class="page" id="page-results">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Results & Insights</div>
+          <div class="page-subtitle">3 scenarios · 36,000 interactions · Confidence: High</div>
+        </div>
+        <button class="btn btn-ghost" onclick="showNotif('📄 Exporting strategy brief PDF...')">Export Brief</button>
+      </div>
+
+      <div class="content">
+        <div class="grid-4" style="margin-bottom:28px">
+          <div class="card">
+            <div class="card-title">Best Scenario</div>
+            <div class="card-value" style="font-size:18px;font-family:'Syne',sans-serif;font-weight:700;">Scenario A</div>
+            <div class="card-delta delta-up">Baseline wins on ROAS</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Predicted Conv. Rate</div>
+            <div class="card-value glow-green">5.0%</div>
+            <div class="card-delta delta-up">CI: 4.2% – 5.9%</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Predicted ROAS</div>
+            <div class="card-value glow-purple">4.7×</div>
+            <div class="card-delta delta-up">+0.3× vs Scenario B</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Risk Score</div>
+            <div class="card-value glow-orange">Low</div>
+            <div class="card-delta">Variance: σ = 0.41</div>
+          </div>
+        </div>
+
+        <div class="section-title fade-up fade-up-d1">Scenario Comparison</div>
+        <div class="card fade-up fade-up-d1" style="margin-bottom:24px">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Personas Converted</th>
+                <th>Avg. Conv. Rate</th>
+                <th>Predicted ROAS</th>
+                <th>Est. CAC</th>
+                <th>Risk</th>
+                <th>Recommendation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>A — Baseline</strong></td>
+                <td class="mono">620</td>
+                <td class="mono">5.0%</td>
+                <td class="mono glow-green">4.7×</td>
+                <td class="mono">$18.40</td>
+                <td><span class="badge badge-green">Low</span></td>
+                <td><span class="badge badge-purple">✓ Deploy</span></td>
+              </tr>
+              <tr>
+                <td>B — Aggressive Price</td>
+                <td class="mono">710</td>
+                <td class="mono">5.9%</td>
+                <td class="mono">3.8×</td>
+                <td class="mono">$22.10</td>
+                <td><span class="badge badge-orange">Med</span></td>
+                <td>A/B Test</td>
+              </tr>
+              <tr>
+                <td>C — Premium Anchor</td>
+                <td class="mono">488</td>
+                <td class="mono">4.1%</td>
+                <td class="mono">4.2×</td>
+                <td class="mono">$20.80</td>
+                <td><span class="badge badge-green">Low</span></td>
+                <td>Niche Use</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-title fade-up fade-up-d2">Persona-Level Conversion (Scenario A)</div>
+        <div class="card fade-up fade-up-d2" style="margin-bottom:24px">
+          <div class="chart-container">
+            <div class="bar-chart" id="barChart"></div>
+          </div>
+        </div>
+
+        <div class="section-title fade-up fade-up-d3">AI-Generated Insights</div>
+        <div class="grid-2 fade-up fade-up-d3" style="margin-bottom:0">
+          <div class="insight-card">
+            <div class="insight-icon" style="background:rgba(124,106,247,0.1)">🎯</div>
+            <div class="insight-text">
+              <div class="insight-title">Instagram + Freemium is your sweet spot</div>
+              <div class="insight-body">Emily Chen and Priya Nair archetypes convert at 2.1× average when exposed to Instagram creative + freemium hook. Allocate 40% of budget here.</div>
+            </div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-icon" style="background:rgba(34,211,165,0.1)">⚠️</div>
+            <div class="insight-text">
+              <div class="insight-title">Marcus segment needs a price intervention</div>
+              <div class="insight-body">Price-sensitive personas (26–30 age band) show 3× higher conversion when a visible $20 first-month discount is applied. Consider segmented pricing.</div>
+            </div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-icon" style="background:rgba(249,115,22,0.1)">📊</div>
+            <div class="insight-text">
+              <div class="insight-title">TikTok underperforms for this product</div>
+              <div class="insight-body">Gen-Z personas (Zara archetype) show high engagement but only 2.9% conversion for enterprise SaaS. Reallocating TikTok budget to Google increases ROAS by 0.6×.</div>
+            </div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-icon" style="background:rgba(251,191,36,0.1)">💡</div>
+            <div class="insight-text">
+              <div class="insight-title">Email is an underutilized accelerator</div>
+              <div class="insight-body">Post-trial email sequences with social proof trigger increase 30-day retention probability by 28% across all high-loyalty personas. Automate 3-touch sequence.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEGMENT HEATMAP -->
+    <div class="page" id="page-segments">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Segment Heatmap</div>
+          <div class="page-subtitle">Conversion intensity across persona × channel matrix</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="section-title">Conversion Rate: Persona × Channel</div>
+        <div class="card" style="overflow-x:auto">
+          <div id="heatmapContainer"></div>
+        </div>
+
+        <div style="margin-top:24px" class="grid-2">
+          <div>
+            <div class="section-title">Top Performing Segments</div>
+            <div class="card">
+              <table class="data-table">
+                <thead><tr><th>Persona</th><th>Channel</th><th>Conv. Rate</th><th>ROAS</th></tr></thead>
+                <tbody>
+                  <tr><td>👩‍💼 Emily Chen</td><td>📸 Instagram</td><td class="mono glow-green">8.4%</td><td class="mono">5.8×</td></tr>
+                  <tr><td>👩‍🔬 Priya Nair</td><td>🔍 Google</td><td class="mono">7.1%</td><td class="mono">6.2×</td></tr>
+                  <tr><td>👨‍💻 David Park</td><td>🔗 LinkedIn</td><td class="mono">6.8%</td><td class="mono">5.4×</td></tr>
+                  <tr><td>👨‍🎓 Marcus Williams</td><td>📸 Instagram</td><td class="mono">5.2%</td><td class="mono">3.1×</td></tr>
+                  <tr><td>👩‍🎨 Zara Khan</td><td>🎵 TikTok</td><td class="mono">4.8%</td><td class="mono">2.9×</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="section-title">Worst Performing Segments</div>
+            <div class="card">
+              <table class="data-table">
+                <thead><tr><th>Persona</th><th>Channel</th><th>Conv. Rate</th><th>Action</th></tr></thead>
+                <tbody>
+                  <tr><td>👨‍👨‍👧 Ravi Sharma</td><td>🎵 TikTok</td><td class="mono" style="color:var(--danger)">0.8%</td><td><span class="badge" style="background:rgba(244,63,94,0.1);color:var(--danger)">Cut</span></td></tr>
+                  <tr><td>👩‍🎨 Zara Khan</td><td>🔗 LinkedIn</td><td class="mono" style="color:var(--danger)">1.1%</td><td><span class="badge" style="background:rgba(244,63,94,0.1);color:var(--danger)">Cut</span></td></tr>
+                  <tr><td>👨‍👨‍👧 Ravi Sharma</td><td>🐦 Twitter/X</td><td class="mono">1.4%</td><td><span class="badge badge-orange">Review</span></td></tr>
+                  <tr><td>👨‍🎓 Marcus</td><td>🔗 LinkedIn</td><td class="mono">1.6%</td><td><span class="badge badge-orange">Review</span></td></tr>
+                  <tr><td>👩‍🎨 Zara Khan</td><td>✉️ Email</td><td class="mono">2.1%</td><td><span class="badge badge-purple">Optimize</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUDGET OPTIMIZER -->
+    <div class="page" id="page-optimizer">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Budget Optimizer</div>
+          <div class="page-subtitle">Optimal allocation · $25,000 total budget</div>
+        </div>
+        <button class="btn btn-primary" onclick="showNotif('✅ Allocation applied to campaign')">Apply Allocation</button>
+      </div>
+      <div class="content">
+        <div class="grid-2" style="margin-bottom:24px">
+          <div>
+            <div class="section-title">Recommended Allocation</div>
+            <div class="card">
+              <div id="budgetBars"></div>
+            </div>
+          </div>
+          <div>
+            <div class="section-title">Expected Outcomes</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="card">
+                <div class="card-title">Projected Revenue</div>
+                <div class="card-value glow-green">$117,500</div>
+                <div class="card-delta">on $25K spend · 4.7× ROAS</div>
+              </div>
+              <div class="card">
+                <div class="card-title">Estimated Conversions</div>
+                <div class="card-value glow-purple">620</div>
+                <div class="card-delta">Range: 520–740 (90% CI)</div>
+              </div>
+              <div class="card">
+                <div class="card-title">Avg. Customer LTV</div>
+                <div class="card-value">$1,890</div>
+                <div class="card-delta delta-up">↑ 14% vs industry avg</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Sensitivity Analysis — Price Point</div>
+        <div class="card">
+          <table class="data-table">
+            <thead><tr><th>Price Point</th><th>Est. Conv. Rate</th><th>ROAS</th><th>CAC</th><th>Net Revenue</th><th>Verdict</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">$59/mo</td><td class="mono">7.8%</td><td class="mono">3.1×</td><td class="mono">$19.80</td><td class="mono">$77,500</td><td><span class="badge badge-orange">Volume play</span></td></tr>
+              <tr><td class="mono">$79/mo</td><td class="mono">6.4%</td><td class="mono">4.1×</td><td class="mono">$18.90</td><td class="mono">$102,500</td><td><span class="badge badge-purple">Good balance</span></td></tr>
+              <tr><td class="mono" style="color:var(--accent)"><strong>$99/mo ←</strong></td><td class="mono glow-green"><strong>5.0%</strong></td><td class="mono glow-green"><strong>4.7×</strong></td><td class="mono"><strong>$18.40</strong></td><td class="mono glow-green"><strong>$117,500</strong></td><td><span class="badge badge-green">✓ Optimal</span></td></tr>
+              <tr><td class="mono">$129/mo</td><td class="mono">3.8%</td><td class="mono">4.9×</td><td class="mono">$18.10</td><td class="mono">$118,800</td><td><span class="badge badge-purple">Test worthy</span></td></tr>
+              <tr><td class="mono">$149/mo</td><td class="mono">2.9%</td><td class="mono">4.4×</td><td class="mono">$20.30</td><td class="mono">$107,200</td><td><span class="badge badge-orange">Niche only</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- PERSONA MODAL -->
+<div class="modal-overlay" id="personaModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Persona Detail</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif">
+  <span id="notifIcon">✓</span>
+  <span id="notifText">Action completed</span>
+</div>
+
+<script>
+  // --- NAVIGATION ---
+  function navigate(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+page+"'")) {
+        n.classList.add('active');
+      }
+    });
+
+    if (page === 'dashboard') initFunnel();
+    if (page === 'results') initBarChart();
+    if (page === 'segments') initHeatmap();
+    if (page === 'optimizer') initBudgetBars();
+  }
+
+  // --- FUNNEL ANIMATION ---
+  function initFunnel() {
+    setTimeout(() => {
+      const fills = [
+        { id: 'f2fill', w: 55.5 },
+        { id: 'f3fill', w: 27.5 },
+        { id: 'f4fill', w: 14.5 },
+        { id: 'f5fill', w: 5.0 },
+      ];
+      fills.forEach(f => {
+        document.getElementById(f.id).style.width = f.w + '%';
+      });
+    }, 300);
+  }
+
+  // --- BAR CHART ---
+  function initBarChart() {
+    const data = [
+      { label: 'Emily\nChen', val: 78, color: '#7c6af7' },
+      { label: 'Marcus\nWilliams', val: 42, color: '#22d3a5' },
+      { label: 'Priya\nNair', val: 61, color: '#f97316' },
+      { label: 'Ravi\nSharma', val: 35, color: '#f43f5e' },
+      { label: 'Zara\nKhan', val: 55, color: '#fbbf24' },
+      { label: 'David\nPark', val: 48, color: '#06b6d4' },
+    ];
+
+    const container = document.getElementById('barChart');
+    container.innerHTML = '';
+
+    data.forEach((d, i) => {
+      const group = document.createElement('div');
+      group.className = 'bar-group';
+
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.background = d.color;
+      bar.style.height = '0px';
+      bar.setAttribute('data-val', d.val + '%');
+      bar.style.opacity = '0.85';
+
+      const label = document.createElement('div');
+      label.className = 'bar-label';
+      label.textContent = d.label.split('\n')[0];
+
+      group.appendChild(bar);
+      group.appendChild(label);
+      container.appendChild(group);
+
+      setTimeout(() => {
+        bar.style.height = (d.val * 1.6) + 'px';
+      }, 100 + i * 80);
+    });
+  }
+
+  // --- HEATMAP ---
+  function initHeatmap() {
+    const personas = ['Emily', 'Marcus', 'Priya', 'Ravi', 'Zara', 'David'];
+    const channels = ['Instagram', 'Google', 'Email', 'TikTok', 'LinkedIn', 'Twitter'];
+    const data = [
+      [84, 62, 55, 38, 71, 29],
+      [52, 45, 38, 61, 16, 24],
+      [58, 71, 64, 22, 69, 38],
+      [24, 38, 46, 8,  31, 14],
+      [68, 31, 21, 48, 11, 19],
+      [41, 58, 44, 28, 68, 36],
+    ];
+
+    const container = document.getElementById('heatmapContainer');
+    container.innerHTML = '';
+
+    // Col labels
+    const colLabels = document.createElement('div');
+    colLabels.className = 'heatmap-col-labels';
+    channels.forEach(c => {
+      const lbl = document.createElement('div');
+      lbl.className = 'heatmap-col-label';
+      lbl.textContent = c.substring(0, 5);
+      colLabels.appendChild(lbl);
+    });
+    container.appendChild(colLabels);
+
+    data.forEach((row, ri) => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'heatmap-row';
+
+      const lbl = document.createElement('div');
+      lbl.className = 'heatmap-label';
+      lbl.textContent = personas[ri];
+      rowEl.appendChild(lbl);
+
+      row.forEach((val, ci) => {
+        const cell = document.createElement('div');
+        cell.className = 'heatmap-cell';
+        const intensity = val / 100;
+        cell.style.background = `rgba(124, 106, 247, ${0.05 + intensity * 0.9})`;
+        cell.title = `${personas[ri]} × ${channels[ci]}: ${val}%`;
+        cell.onclick = () => showNotif(`${personas[ri]} × ${channels[ci]}: ${val}% conversion rate`);
+        rowEl.appendChild(cell);
+      });
+      container.appendChild(rowEl);
+    });
+  }
+
+  // --- BUDGET BARS ---
+  function initBudgetBars() {
+    const allocs = [
+      { name: '📸 Instagram', pct: 38, color: 'var(--accent)', amt: 9500 },
+      { name: '🔍 Google Search', pct: 28, color: 'var(--accent3)', amt: 7000 },
+      { name: '✉️ Email Automation', pct: 18, color: '#a78bfa', amt: 4500 },
+      { name: '🔗 LinkedIn', pct: 10, color: 'var(--accent2)', amt: 2500 },
+      { name: '🎵 TikTok', pct: 6, color: var(--gold) !== undefined ? '#fbbf24' : '#fbbf24', amt: 1500 },
+    ];
+
+    const container = document.getElementById('budgetBars');
+    container.innerHTML = '';
+
+    allocs.forEach(a => {
+      const row = document.createElement('div');
+      row.style.marginBottom = '14px';
+      row.innerHTML = `
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+          <span>${a.name}</span>
+          <span class="mono" style="color:${a.color}">$${a.amt.toLocaleString()} · ${a.pct}%</span>
+        </div>
+        <div class="progress-bar" style="height:8px">
+          <div style="height:100%;width:0%;background:${a.color};border-radius:4px;transition:width 1s ease" data-target="${a.pct}%"></div>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+
+    setTimeout(() => {
+      container.querySelectorAll('[data-target]').forEach(el => {
+        el.style.width = el.getAttribute('data-target');
+      });
+    }, 100);
+  }
+
+  // --- SIMULATION ---
+  let simRunning = false;
+
+  function startSim() {
+    if (simRunning) return;
+    simRunning = true;
+
+    navigate('simulation');
+    document.getElementById('simIdle').style.display = 'none';
+    document.getElementById('simRunning').style.display = 'block';
+    document.getElementById('simDone').style.display = 'none';
+    document.getElementById('simBtn').textContent = '⏳ Running...';
+    document.getElementById('simBtn').disabled = true;
+
+    const statuses = [
+      'Initializing persona cohorts...',
+      'Loading behavioral schemas...',
+      'Running MARL environment (Scenario A)...',
+      'Processing 4,000 agent decisions...',
+      'Running MARL environment (Scenario B)...',
+      'Processing 4,000 agent decisions...',
+      'Running MARL environment (Scenario C)...',
+      'Aggregating prediction models...',
+      'Computing confidence intervals...',
+      'Generating insight report...',
+    ];
+
+    const logs = [
+      '[00:00.1] SYN-00001 | Emily-type | Instagram → CLICKED (p=0.84)',
+      '[00:00.2] SYN-00002 | Marcus-type | Google → SKIPPED (p=0.31)',
+      '[00:00.4] SYN-00003 | Priya-type | Instagram → CLICKED (p=0.71)',
+      '[00:00.8] SYN-00004 | Ravi-type | TikTok → IGNORED (p=0.08)',
+      '[00:01.1] SYN-00005 | Zara-type | TikTok → ENGAGED (p=0.68)',
+      '[00:01.4] SYN-00006 | David-type | LinkedIn → CLICKED (p=0.62)',
+      '[00:01.8] SYN-00101 | Emily-type | Email → CONVERTED (p=0.78)',
+      '[00:02.2] SYN-00204 | Marcus-type | Instagram → CLICKED → Price barrier → DROP',
+      '[00:02.7] SYN-00312 | Priya-type | Google → CONVERTED (p=0.61)',
+      '[00:03.1] SYN-00441 | Zara-type | Instagram → ENGAGED → Shared → WOM+3',
+      '[00:04.2] Scenario A: 620 conversions · 5.0% rate · ROAS 4.7×',
+      '[00:05.1] Scenario B: 710 conversions · 5.9% rate · ROAS 3.8×',
+      '[00:06.3] Scenario C: 488 conversions · 4.1% rate · ROAS 4.2×',
+      '[00:08.4] Running Monte Carlo variance check (σ=0.41)...',
+      '[00:10.2] Generating AI insight layer...',
+      '[00:12.4] ✓ Simulation complete. 36,000 interactions modeled.',
+    ];
+
+    let pcts = [0, 0, 0];
+    let statusIdx = 0;
+    let logIdx = 0;
+    const logArea = document.getElementById('logArea');
+
+    const interval = setInterval(() => {
+      // Advance bars
+      if (pcts[0] < 100) { pcts[0] = Math.min(pcts[0] + 8, 100); }
+      else if (pcts[1] < 100) { pcts[1] = Math.min(pcts[1] + 8, 100); }
+      else if (pcts[2] < 100) { pcts[2] = Math.min(pcts[2] + 8, 100); }
+
+      pcts.forEach((p, i) => {
+        const el = document.getElementById('p' + (i+1));
+        const pEl = document.getElementById('p' + (i+1) + 'pct');
+        if (el) el.style.width = p + '%';
+        if (pEl) pEl.textContent = p + '%';
+      });
+
+      // Rotate status
+      if (statusIdx < statuses.length) {
+        document.getElementById('simStatusText').textContent = statuses[Math.floor(statusIdx)];
+      }
+      statusIdx += 0.5;
+
+      // Add logs
+      if (logIdx < logs.length) {
+        const line = document.createElement('div');
+        line.style.color = logs[logIdx].includes('CONVERTED') ? 'var(--accent3)' :
+                           logs[logIdx].includes('DROP') ? 'var(--danger)' :
+                           logs[logIdx].includes('✓') ? 'var(--accent3)' :
+                           logs[logIdx].includes('Scenario') ? 'var(--accent)' : '';
+        line.textContent = logs[logIdx];
+        logArea.appendChild(line);
+        logArea.scrollTop = logArea.scrollHeight;
+        logIdx++;
+      }
+
+      // Done?
+      if (pcts[2] === 100 && logIdx >= logs.length) {
+        clearInterval(interval);
+        setTimeout(() => {
+          document.getElementById('simRunning').style.display = 'none';
+          document.getElementById('simDone').style.display = 'block';
+          document.getElementById('simBtn').textContent = '▶ Re-run';
+          document.getElementById('simBtn').disabled = false;
+          simRunning = false;
+        }, 600);
+      }
+    }, 200);
+  }
+
+  // --- PERSONA MODAL ---
+  const personaData = {
+    Emily: {
+      emoji: '👩‍💼',
+      name: 'Emily Chen',
+      meta: '34 · Urban Professional · $72K/yr · Mumbai',
+      bio: 'Emily is a digitally-savvy marketing manager who values sustainability, convenience, and peer-validated brands. She shops online 3–4×/week and actively follows lifestyle influencers.',
+      traits: ['value-driven', 'eco-conscious', 'instagram-first', 'peer-influenced'],
+      scores: { 'Purchase Probability': 78, 'Brand Loyalty': 67, 'Price Sensitivity': 45, 'Social Influence Susceptibility': 82, 'Risk Tolerance': 40, 'Churn Probability': 22 },
+      triggers: 'Peer reviews, 15%+ discount, sustainability claims, Instagram native ads',
+      biases: 'Social proof bias, loss aversion, status signaling',
+      channels: 'Instagram (primary), Email, Pinterest',
+      cycle: '21-day decision cycle',
+    },
+    Marcus: {
+      emoji: '👨‍🎓',
+      name: 'Marcus Williams',
+      meta: '26 · Freelancer · $28K/yr · Tier-2 City',
+      bio: 'Marcus is a price-conscious tech enthusiast who hunts deals aggressively. He relies on YouTube reviews and Discord communities before any purchase. Free trials are non-negotiable.',
+      traits: ['price-sensitive', 'early-adopter', 'FOMO-driven', 'deal-hunter'],
+      scores: { 'Purchase Probability': 42, 'Brand Loyalty': 28, 'Price Sensitivity': 91, 'Social Influence Susceptibility': 55, 'Risk Tolerance': 65, 'Churn Probability': 58 },
+      triggers: 'Limited-time offer, YouTube reviews, free trials, Discord recommendations',
+      biases: 'FOMO, anchoring bias, scarcity heuristic',
+      channels: 'Instagram, YouTube, TikTok',
+      cycle: '7-day decision cycle',
+    },
+    Priya: {
+      emoji: '👩‍🔬',
+      name: 'Priya Nair',
+      meta: '41 · Senior Manager · $120K/yr · Metro',
+      bio: 'Priya is a high-income professional who researches thoroughly before committing. She reads long-form reviews, white papers, and trusts expert endorsements over peer reviews.',
+      traits: ['premium-seeker', 'quality-focused', 'research-heavy', 'brand-loyal'],
+      scores: { 'Purchase Probability': 61, 'Brand Loyalty': 84, 'Price Sensitivity': 18, 'Social Influence Susceptibility': 39, 'Risk Tolerance': 30, 'Churn Probability': 12 },
+      triggers: 'Expert endorsements, premium positioning, detailed case studies, LinkedIn thought leadership',
+      biases: 'Authority bias, quality halo, confirmation bias',
+      channels: 'LinkedIn, Google, Email newsletters',
+      cycle: '45-day decision cycle',
+    },
+  };
+
+  function openPersonaModal(name) {
+    const p = personaData[name];
+    if (!p) return;
+
+    document.getElementById('modalTitle').textContent = p.name;
+    document.getElementById('modalContent').innerHTML = `
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+        <div style="font-size:48px">${p.emoji}</div>
+        <div>
+          <div style="font-size:15px;font-weight:700">${p.name}</div>
+          <div style="font-size:12px;color:var(--muted)">${p.meta}</div>
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+            ${p.traits.map(t => `<span class="tag tag-purple">${t}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px">${p.bio}</p>
+      <div class="divider"></div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:600">Behavioral Scores</div>
+        ${Object.entries(p.scores).map(([k,v]) => `
+          <div class="score-row" style="margin-bottom:8px">
+            <div class="score-label" style="width:180px">${k}</div>
+            <div class="score-bar-bg"><div class="score-bar-fill" style="width:${v}%;background:var(--accent)"></div></div>
+            <div class="score-val">${v}%</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="divider"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px">
+        <div><div class="form-label">Decision Triggers</div><div style="color:var(--muted)">${p.triggers}</div></div>
+        <div><div class="form-label">Cognitive Biases</div><div style="color:var(--muted)">${p.biases}</div></div>
+        <div><div class="form-label">Preferred Channels</div><div style="color:var(--muted)">${p.channels}</div></div>
+        <div><div class="form-label">Purchase Cycle</div><div style="color:var(--muted)">${p.cycle}</div></div>
+      </div>
+    `;
+
+    document.getElementById('personaModal').classList.add('open');
+
+    // Animate bars after modal opens
+    setTimeout(() => {
+      document.querySelectorAll('#modalContent .score-bar-fill').forEach((el, i) => {
+        const target = el.style.width;
+        el.style.width = '0%';
+        setTimeout(() => { el.style.width = target; }, 100 + i * 60);
+      });
+    }, 100);
+  }
+
+  function closeModal() {
+    document.getElementById('personaModal').classList.remove('open');
+  }
+
+  // --- NOTIFICATION ---
+  function showNotif(msg) {
+    const notif = document.getElementById('notif');
+    document.getElementById('notifText').textContent = msg;
+    notif.classList.add('show');
+    setTimeout(() => notif.classList.remove('show'), 3000);
+  }
+
+  // --- INIT ---
+  initFunnel();
+  setTimeout(() => initBarChart(), 100);
+</script>
+</body>
+</html>

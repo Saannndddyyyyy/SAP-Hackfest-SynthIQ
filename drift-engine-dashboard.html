@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriftLab — Behavioral Drift Engine</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050508;
+            --surface: #0e0e15;
+            --surface2: #14141e;
+            --border: #242432;
+            --accent: #8b5cf6;
+            --accent-glow: rgba(139, 92, 246, 0.4);
+            --accent2: #f97316;
+            --accent3: #10b981;
+            --text: #f1f1f7;
+            --muted: #8080a8;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Syne', sans-serif;
+            line-height: 1.5;
+            overflow-x: hidden;
+            padding: 40px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.2;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 24px;
+        }
+
+        .header-left h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 42px;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-left p {
+            color: var(--muted);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-top: 4px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+        }
+
+        .controls-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            position: sticky;
+            top: 40px;
+            height: fit-content;
+        }
+
+        .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--muted);
+            margin-bottom: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .control-value {
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--accent);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .trigger-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .trigger-btn:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .trigger-btn.active {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .display-area {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .persona-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .persona-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .persona-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 4px;
+        }
+
+        .persona-card.c1::before {
+            background: #6366f1;
+        }
+
+        .persona-card.c2::before {
+            background: #10b981;
+        }
+
+        .persona-card.c3::before {
+            background: #f59e0b;
+        }
+
+        .persona-card.c4::before {
+            background: #ef4444;
+        }
+
+        .persona-card.c5::before {
+            background: #ec4899;
+        }
+
+        .persona-card.shock-active {
+            border-color: var(--accent2);
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.2);
+        }
+
+        .persona-name {
+            font-weight: 800;
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        .persona-label {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .stat-label {
+            color: var(--muted);
+        }
+
+        .stat-val {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 500;
+        }
+
+        .probability-bar-container {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .prob-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .prob-bar-bg {
+            height: 10px;
+            background: var(--surface2);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .prob-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #d8b4fe);
+            width: 0%;
+            transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .delta-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 12px;
+        }
+
+        .pill-down {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .pill-up {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .shock-pill {
+            background: rgba(249, 115, 22, 0.2);
+            color: #fdba74;
+            display: block;
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            margin-top: 10px;
+            padding: 6px 12px;
+        }
+
+        /* Logs Panel */
+        .logs-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            height: 250px;
+            overflow-y: auto;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 6px;
+            border-left: 3px solid var(--border);
+            padding-left: 12px;
+            transition: border-color 0.3s;
+        }
+
+        .log-entry.shock-highlight {
+            border-color: var(--accent2);
+            background: rgba(249, 115, 22, 0.05);
+        }
+
+        .log-time {
+            color: var(--muted);
+            margin-right: 12px;
+        }
+
+        .log-shock {
+            color: var(--accent2);
+            font-weight: 700;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            background: var(--surface2);
+            border: 1px solid var(--accent2);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(249, 115, 22, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            animation: slideInToast 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+            max-width: 380px;
+        }
+
+        @keyframes slideInToast {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-icon {
+            font-size: 24px;
+        }
+
+        .toast-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toast-title {
+            font-weight: 800;
+            font-size: 14px;
+            color: var(--accent2);
+        }
+
+        .toast-msg {
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .persona-card {
+            animation: slideIn 0.5s ease backwards;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="toast-container" id="toasts"></div>
+
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>DriftLab v2</h1>
+                <p>10-Persona Segment Hub • Real-Time Shock Propagation</p>
+            </div>
+            <div
+                style="font-size: 11px; color: var(--muted); text-align: right; font-family: 'IBM Plex Mono', monospace;">
+                ENGINE STATE: <span style="color: var(--accent3);">OPTIMIZED</span><br>
+                MONTE CARLO SEEDS: RANDOMIZED
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="controls-panel">
+                <section>
+                    <div class="section-label">Macro Stressors</div>
+                    <div class="control-group">
+                        <div class="control-header"><span>Inflation</span><span class="control-value"
+                                id="val-inflation">3.0%</span></div>
+                        <input type="range" id="input-inflation" min="0" max="10" step="0.1" value="3.0">
+                    </div>
+                    <div class="control-group">
+                        <div class="control-header"><span>Interest Rate</span><span class="control-value"
+                                id="val-rates">5.0%</span></div>
+                        <input type="range" id="input-rates" min="0" max="15" step="0.1" value="5.0">
+                    </div>
+                    <div class="control-group">
+                        <div class="control-header"><span>Unemployment</span><span class="control-value"
+                                id="val-unemployment">4.0%</span></div>
+                        <input type="range" id="input-unemployment" min="0" max="20" step="0.1" value="4.0">
+                    </div>
+                    <div class="control-group">
+                        <div class="control-header"><span>GDP Growth</span><span class="control-value"
+                                id="val-gdp">6.5%</span></div>
+                        <input type="range" id="input-gdp" min="0" max="12" step="0.1" value="6.5">
+                    </div>
+                </section>
+
+                <section>
+                    <div class="section-label">Manual Product Faults</div>
+                    <div class="button-grid">
+                        <button class="trigger-btn" data-setback="Price Hike"><span>🏷️</span> Price Hike</button>
+                        <button class="trigger-btn" data-setback="Feature Obsolescence"><span>🚫</span> Feature
+                            Del</button>
+                        <button class="trigger-btn" data-setback="Service Instability"><span>📉</span> Outage</button>
+                        <button class="trigger-btn" data-setback="Support Friction"><span>☎️</span> Support Lag</button>
+                    </div>
+                </section>
+
+                <div style="margin-top: auto;">
+                    <button id="reset-btn" class="trigger-btn"
+                        style="width: 100%; height: auto; padding: 14px; border-color: var(--danger); color: var(--danger);">
+                        REVERT TO BASELINE
+                    </button>
+                </div>
+            </div>
+
+            <div class="display-area">
+                <div class="persona-grid" id="card-container"></div>
+                <section>
+                    <div class="section-label">Real-Time Event Stream (Random Personal Shocks)</div>
+                    <div class="logs-panel" id="logs"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PERSONAS = [
+            { id: 'c1_a', name: "C1-A", label: "Conservative Low-Income", income: 28000, spend: 210, rt: 0.20, sp: 0.25, dp: 0.18, alpha: 0.030, beta: 0.025, gamma: 0.020 },
+            { id: 'c1_b', name: "C1-B", label: "Fixed-Payer Stressed", income: 24000, spend: 180, rt: 0.15, sp: 0.20, dp: 0.25, alpha: 0.035, beta: 0.030, gamma: 0.025 },
+            { id: 'c2_a', name: "C2-A", label: "Young Mid-Spender", income: 52000, spend: 780, rt: 0.55, sp: 0.60, dp: 0.10, alpha: 0.020, beta: 0.018, gamma: 0.015 },
+            { id: 'c2_b', name: "C2-B", label: "Aggressive Careerist", income: 65000, spend: 1100, rt: 0.65, sp: 0.70, dp: 0.08, alpha: 0.018, beta: 0.015, gamma: 0.012 },
+            { id: 'c3_a', name: "C3-A", label: "Affluent High-Spender", income: 88000, spend: 1850, rt: 0.70, sp: 0.75, dp: 0.05, alpha: 0.012, beta: 0.010, gamma: 0.008 },
+            { id: 'c3_b', name: "C3-B", label: "Legacy High-Net", income: 145000, spend: 3200, rt: 0.80, sp: 0.85, dp: 0.02, alpha: 0.005, beta: 0.004, gamma: 0.003 },
+            { id: 'c4_a', name: "C4-A", label: "Cautious Saver", income: 45000, spend: 430, rt: 0.35, sp: 0.40, dp: 0.12, alpha: 0.022, beta: 0.020, gamma: 0.017 },
+            { id: 'c4_b', name: "C4-B", label: "Risk-Averse Retiree", income: 38000, spend: 350, rt: 0.25, sp: 0.30, dp: 0.15, alpha: 0.025, beta: 0.022, gamma: 0.020 },
+            { id: 'c5_a', name: "C5-A", label: "Premium Power-Buyer", income: 130000, spend: 2950, rt: 0.85, sp: 0.90, dp: 0.03, alpha: 0.008, beta: 0.007, gamma: 0.005 },
+            { id: 'c5_b', name: "C5-B", label: "Asset-Rich Passive", income: 190000, spend: 4500, rt: 0.90, sp: 0.95, dp: 0.01, alpha: 0.003, beta: 0.002, gamma: 0.001 }
+        ];
+
+        const PERSONAL_SHOCKS = {
+            "Career Setback": [-0.15, -0.20, 0.10],
+            "Health Crisis": [-0.10, -0.30, 0.15],
+            "Family Change": [0.05, 0.10, -0.02],
+            "Major Windfall": [0.20, 0.25, -0.05],
+            "Digital Fatigue": [-0.05, -0.10, 0.00],
+            "Social FOMO": [0.10, 0.20, 0.05],
+            "Relocation": [-0.05, -0.05, 0.02]
+        };
+
+        const PRODUCT_SETBACKS = {
+            "Price Hike": [0.00, -0.25, 0.00],
+            "Feature Obsolescence": [-0.10, -0.15, 0.00],
+            "Service Instability": [-0.20, -0.10, 0.00],
+            "Support Friction": [-0.15, -0.05, 0.00]
+        };
+
+        let activeSetback = null;
+
+        function createToast(title, msg) {
+            const container = document.getElementById('toasts');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<div class="toast-icon">⚡</div><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideInToast 0.4s reverse forwards';
+                setTimeout(() => toast.remove(), 400);
+            }, 5000);
+        }
+
+        function calculatePurchaseProbability(income, spend, risk, fsi) {
+            const incomeScore = (income / 130000) * 100;
+            const spendScore = (spend / 2950) * 100;
+            const riskScore = risk * 100;
+            const stressPenalty = (fsi / 10.0) * 100;
+            const rawScore = (0.25 * incomeScore) + (0.35 * spendScore) + (0.30 * riskScore) - (0.10 * stressPenalty);
+            return 100 / (1 + Math.exp(-0.07 * (rawScore - 50)));
+        }
+
+        function runDriftSimulation() {
+            const inflation = parseFloat(document.getElementById('input-inflation').value);
+            const rates = parseFloat(document.getElementById('input-rates').value);
+            const unemployment = parseFloat(document.getElementById('input-unemployment').value);
+            const gdp = parseFloat(document.getElementById('input-gdp').value);
+
+            let fsi = (0.4 * inflation) + (0.3 * rates) + (0.3 * unemployment);
+            fsi = fsi * (1 - (0.015 * Math.max(0, gdp - 6.0)));
+
+            const logPanel = document.getElementById('logs');
+            PERSONAS.forEach(p => {
+                const card = document.getElementById(`card-${p.id}`);
+                card.classList.remove('shock-active');
+
+                let rVal = p.rt - (p.alpha * fsi);
+                let sVal = p.sp - (p.beta * fsi);
+                let dVal = p.dp + (p.gamma * fsi);
+
+                if (activeSetback) {
+                    const [rd, sd, dd] = PRODUCT_SETBACKS[activeSetback];
+                    rVal += rd; sVal += sd; dVal += dd;
+                }
+
+                let activeShock = null;
+                if (Math.random() < 0.25) { // 25% chance of personal shock
+                    const shockKeys = Object.keys(PERSONAL_SHOCKS);
+                    activeShock = shockKeys[Math.floor(Math.random() * shockKeys.length)];
+                    const [rd, sd, dd] = PERSONAL_SHOCKS[activeShock];
+                    rVal += rd; sVal += sd; dVal += dd;
+
+                    card.classList.add('shock-active');
+                    createToast(`PERSONAL SHOCK: ${p.id}`, `${activeShock} triggered for ${p.label}`);
+
+                    const time = new Date().toLocaleTimeString([], { hour12: false });
+                    const entry = document.createElement('div');
+                    entry.className = 'log-entry shock-highlight';
+                    entry.innerHTML = `<span class="log-time">[${time}]</span> ${p.id} EXPERIENCED <span class="log-shock">${activeShock}</span>`;
+                    logPanel.prepend(entry);
+                }
+
+                rVal = Math.min(1, Math.max(0, rVal));
+                sVal = Math.min(1, Math.max(0, sVal));
+                dVal = Math.min(1, Math.max(0, dVal));
+
+                const probBefore = calculatePurchaseProbability(p.income, p.spend, p.rt, 0);
+                const probAfter = calculatePurchaseProbability(p.income, p.spend, rVal, fsi);
+                updateCard(p.id, rVal, sVal, dVal, probAfter, probAfter - probBefore, activeShock);
+            });
+        }
+
+        function initCards() {
+            const container = document.getElementById('card-container');
+            container.innerHTML = "";
+            PERSONAS.forEach(p => {
+                container.innerHTML += `
+                    <div class="persona-card ${p.id.split('_')[0]}" id="card-${p.id}">
+                        <div class="persona-name">${p.name}</div>
+                        <div class="persona-label">${p.label}</div>
+                        <div class="stats-row"><span class="stat-label">Risk Tolerance</span><span class="stat-val" id="${p.id}-rt">--</span></div>
+                        <div class="stats-row"><span class="stat-label">Spend Propensity</span><span class="stat-val" id="${p.id}-sp">--</span></div>
+                        <div class="stats-row"><span class="stat-label">Default Probability</span><span class="stat-val" id="${p.id}-dp">--</span></div>
+                        <div class="probability-bar-container">
+                            <div class="prob-header"><span>Purchase Prob.</span><span class="stat-val" id="${p.id}-prob">0%</span></div>
+                            <div class="prob-bar-bg"><div class="prob-bar-fill" id="${p.id}-bar"></div></div>
+                            <div id="${p.id}-delta"></div>
+                            <div id="${p.id}-shock" class="delta-pill shock-pill" style="display:none"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateCard(id, r, s, d, prob, delta, shock) {
+            document.getElementById(`${id}-rt`).innerText = r.toFixed(2);
+            document.getElementById(`${id}-sp`).innerText = s.toFixed(2);
+            document.getElementById(`${id}-dp`).innerText = d.toFixed(2);
+            document.getElementById(`${id}-prob`).innerText = Math.round(prob) + "%";
+            document.getElementById(`${id}-bar`).style.width = prob + "%";
+
+            const deltaEl = document.getElementById(`${id}-delta`);
+            if (delta <= -0.5) { deltaEl.className = "delta-pill pill-down"; deltaEl.innerText = `DRIFT: ${delta.toFixed(1)} pp`; }
+            else if (delta >= 0.5) { deltaEl.className = "delta-pill pill-up"; deltaEl.innerText = `DRIFT: +${delta.toFixed(1)} pp`; }
+            else { deltaEl.className = ""; deltaEl.innerText = ""; }
+
+            const shockEl = document.getElementById(`${id}-shock`);
+            if (shock) { shockEl.style.display = "block"; shockEl.innerText = `⚡ ${shock}`; }
+            else { shockEl.style.display = "none"; }
+        }
+
+        document.querySelectorAll('input[type="range"]').forEach(input => {
+            input.addEventListener('input', (e) => {
+                document.getElementById(e.target.id.replace('input-', 'val-')).innerText = e.target.value + "%";
+                runDriftSimulation();
+            });
+        });
+
+        document.querySelectorAll('.trigger-btn[data-setback]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const setback = e.currentTarget.getAttribute('data-setback');
+                document.querySelectorAll('.trigger-btn').forEach(b => b.classList.remove('active'));
+                if (activeSetback !== setback) { activeSetback = setback; e.currentTarget.classList.add('active'); }
+                else { activeSetback = null; }
+                runDriftSimulation();
+            });
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => { location.reload(); });
+
+        initCards();
+        runDriftSimulation();
+    </script>
+</body>
+
+</html>

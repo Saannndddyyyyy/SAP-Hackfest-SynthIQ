@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SynthIQ — Multi-Cluster Intelligence Suite</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <style>
         :root {
@@ -567,11 +567,465 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
+        /* Pulse Dashboard Layout */
+        .pulse-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .pulse-quad {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pulse-quad.central-map {
+            grid-row: span 2;
+            min-height: 580px;
+        }
+
+        .pulse-kpi-row {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .pulse-kpi {
+            flex: 1;
+        }
+
+        .pulse-kpi label {
+            display: block;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-weight: 800;
+        }
+
+        .pulse-kpi span {
+            font-family: 'DM Serif Display';
+            font-size: 32px;
+            color: var(--text);
+        }
+
+        .pulse-chart-container {
+            flex: 1;
+            min-height: 150px;
+            position: relative;
+        }
+
+        /* SVG Heatmap Styles */
+        .state-path {
+            transition: fill 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .state-path:hover {
+            filter: brightness(1.3);
+            stroke: #fff;
+            stroke-width: 1.5;
+        }
+
+        /* Radar Chart Markers */
+        .radar-label {
+            font-family: 'IBM Plex Mono';
+            font-size: 8px;
+            font-weight: 700;
+            fill: var(--muted);
+            text-transform: uppercase;
+        }
+
+        /* === DriftLab v2 Upgrade Styles === */
+        .driftlab-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+            margin-top: 20px;
+            font-family: 'Syne', sans-serif;
+        }
+
+        .drift-controls {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .drift-section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--muted);
+            margin-bottom: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .drift-section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .drift-control-group {
+            margin-bottom: 20px;
+        }
+
+        .drift-control-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .drift-val {
+            color: var(--accent);
+            font-family: 'IBM Plex Mono';
+        }
+
+        .drift-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .drift-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .persona-drift-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .drift-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideIn 0.5s ease backwards;
+        }
+
+        .drift-card.active-shock {
+            border-color: var(--accent2);
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);
+        }
+
+        .drift-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent);
+        }
+
+        .drift-card-name {
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--text);
+        }
+
+        .drift-card-label {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .drift-stat {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .drift-stat label {
+            color: var(--muted);
+        }
+
+        .drift-stat span {
+            font-family: 'IBM Plex Mono';
+            font-weight: 600;
+        }
+
+        .drift-prob-container {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .drift-prob-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .drift-prob-bar {
+            height: 10px;
+            background: var(--surface2);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .drift-prob-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #d8b4fe);
+            width: 0%;
+            transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .drift-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 12px;
+        }
+
+        .drift-pill.down {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .drift-pill.up {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .drift-shock-pill {
+            background: rgba(249, 115, 22, 0.2);
+            color: #fdba74;
+            display: block;
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            margin-top: 10px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .drift-log-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            height: 250px;
+            overflow-y: auto;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            margin-top: 24px;
+        }
+
+        .drift-log-entry.macro {
+            border-left-color: var(--accent);
+        }
+
+        .drift-log-entry.personal {
+            border-left-color: var(--accent2);
+            background: rgba(249, 115, 22, 0.05);
+        }
+
+        .drift-log-entry.cultural {
+            border-left-color: var(--accent3);
+            background: rgba(34, 211, 165, 0.05);
+        }
+
+        .drift-log-time {
+            color: var(--muted);
+            margin-right: 12px;
+        }
+
+        .drift-log-shock {
+            color: var(--accent2);
+            font-weight: 700;
+        }
+
+        .state-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            display: none;
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .state-options.open {
+            display: block;
+        }
+
+        .state-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .state-option:hover {
+            background: var(--surface);
+        }
+
+        /* Step 5: Market Pulse Dashboard */
+        .dashboard-header-pulse {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pulse-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 280px);
+            /* Adjust based on header/footer */
+        }
+
+        .pulse-quad {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pulse-quad.central-map {
+            grid-row: span 2;
+        }
+
+        .pulse-kpi-row {
+            display: flex;
+            gap: 20px;
+            margin-top: 16px;
+        }
+
+        .pulse-kpi {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .pulse-kpi label {
+            display: block;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .pulse-kpi span {
+            font-family: 'IBM Plex Mono';
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .badge-mini {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 4px 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--muted);
+            margin-left: 8px;
+        }
+
+        .pulse-chart-mini {
+            flex: 1;
+            margin-top: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .share-bar {
+            flex: 1;
+            background: var(--accent);
+            border-radius: 2px 2px 0 0;
+            position: relative;
+            transition: height 0.3s ease;
+        }
+
+        .share-bar:hover::after {
+            content: attr(data-label);
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            color: var(--text);
+            white-space: nowrap;
+        }
     </style>
 </head>
 
 <body>
-
     <div class="overlay" id="sim-overlay">
         <div style="width:450px">
             <h3 id="sim-title" style="font-family:'DM Serif Display'; font-size:28px;"></h3>
@@ -588,11 +1042,13 @@
             <div
                 style="border-bottom: 1px solid var(--border); padding-bottom: 32px; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-end;">
                 <div>
-                    <h1 style="font-family:'DM Serif Display'; font-size:48px;">Executive Market Insights Dashboard</h1>
+                    <h1 style="font-family:'DM Serif Display'; font-size:48px;">Phase 4: Resilience Audit Report</h1>
                     <p style="color:var(--muted); font-weight:700; letter-spacing:2px; text-transform:uppercase;"
-                        id="rep-mode-title">Hackfest Edition — High-Fidelity Logic</p>
+                        id="rep-mode-title">Resilience Analysis — 50,000 Agents Audit</p>
                 </div>
-                <button class="btn btn-secondary" onclick="location.reload()">New Simulation Cycle</button>
+                <button class="btn btn-secondary"
+                    onclick="document.getElementById('final-report').style.display='none'">Confirm Audit & Continue to
+                    Step 5</button>
             </div>
 
             <div class="grid grid-3">
@@ -616,10 +1072,10 @@
                     <div class="card-label">Cluster Sentiment Analysis (Post-Drift)</div>
                     <div class="dashboard-chart" id="dashboard-chart"></div>
                     <p style="margin-top:16px; font-size:11px; color:var(--muted);">The blue bar highlights your
-                        <b>Target Acquisition Segment</b> (highest post-drift affinity).
+                        <b>Target
+                            Acquisition Segment</b> (highest post-drift affinity).
                     </p>
                 </div>
-
                 <div class="card">
                     <div class="card-label" id="sample-label">Representative Audience Sample (Cultural Stratification)
                     </div>
@@ -645,8 +1101,21 @@
                         High-Friction enthusiast</h4>
                     <p id="rep-opp-verbatim" class="verbatim-text"></p>
                 </div>
-
                 <div class="card">
+                    <div class="card-label">Market Fit Drivers</div>
+                    <div class="drivers-grid" id="market-drivers">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                <div class="card" style="grid-column: span 2;">
+                    <div class="card-label">Consumer Sentiment Logic</div>
+                    <div class="insight-box" id="sentiment-insight">
+                        <b>Crowd Synchronization</b>
+                        The strategy strongly connects with the broader market because it aligns with financial reality
+                        and emotional comfort.
+                    </div>
+                </div>
+                <div class="card" style="grid-column: span 2;">
                     <div class="card-label">Macro-Resilience Summary</div>
                     <p style="color:var(--muted); margin-top:12px; line-height:1.6; font-size:14px;" id="rep-rationale">
                     </p>
@@ -654,7 +1123,6 @@
             </div>
         </div>
     </div>
-
     <header class="wizard-header">
         <div class="logo">
             <h1>SynthIQ</h1>
@@ -673,18 +1141,17 @@
                 <div class="step-num">4</div>Audit
             </div>
             <div class="step" id="st-5">
-                <div class="step-num">5</div>Dashboard
+                <div class="step-num">5</div>Pulse
             </div>
         </div>
         <div style="font-size:10px; color:var(--muted); font-family:'IBM Plex Mono'">SYNTHIQ_HACK_V12</div>
     </header>
-
     <main class="viewport">
         <!-- STEP 1: INITIALIZATION -->
         <div id="page-1" class="page active">
             <div class="title-block">
                 <h2>Synthetic Methodology</h2>
-                <p>Synthesize a high-resolution market grid of 20,000 agents with individual life-markers (Age, Income,
+                <p>Synthesize a high-resolution market grid of 50,000 agents with individual life-markers (Age, Income,
                     Big Five).</p>
             </div>
             <div class="card-label">Simulation Mode</div>
@@ -699,16 +1166,25 @@
                 </div>
             </div>
             <div class="card" style="margin-bottom:24px;">
-                <div class="card-label">Audience Scale</div>
-                <div style="display:flex; align-items:center; gap:24px; margin-top:12px;">
-                    <input type="range" min="1000" max="50000" step="1000" value="20000" id="pop-slider"
-                        oninput="updatePopLabel()" style="flex:1;">
-                    <div id="pop-label"
-                        style="font-family:'IBM Plex Mono'; font-size:28px; font-weight:800; color:var(--accent); width:150px;">
-                        20,000</div>
+                <div class="card-label">Target Geography (India)</div>
+                <div class="state-selector-container">
+                    <div class="state-dropdown-trigger" id="state-trigger" onclick="toggleStateDropdown()">Select
+                        Target States (All by default)</div>
+                    <div class="state-options" id="state-options">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="initAgents()">◈ CONSTRUCT MARKET DNA</button>
+            <div class="card" style="margin-bottom:24px;">
+                <div class="card-label">Audience Scale</div>
+                <div style="display:flex; align-items:center; gap:24px; margin-top:12px;"><input type="range" min="1000"
+                        max="50000" step="1000" value="50000" id="pop-slider" oninput="updatePopLabel()"
+                        style="flex:1;">
+                    <div id="pop-label"
+                        style="font-family:'IBM Plex Mono'; font-size:28px; font-weight:800; color:var(--accent); width:150px;">
+                        50,000</div>
+                </div>
+            </div><button class="btn btn-primary" onclick="initAgents()">◈ CONSTRUCT MARKET DNA</button>
             <div id="res-1" style="display:none; margin-top:24px;">
                 <div class="card-label">Audience Grid Census</div>
                 <div class="census-track" id="census-track"></div>
@@ -717,7 +1193,6 @@
                 </div>
             </div>
         </div>
-
         <!-- STEP 2: RESONANCE -->
         <div id="page-2" class="page">
             <div id="view-acceptance" style="display:none;">
@@ -726,8 +1201,10 @@
                     <p>Define your product to trigger the semantic resonance engine.</p>
                 </div>
                 <div class="card">
-                    <div class="card-label">Product Context</div><textarea id="product-desc"
-                        style="height:120px;">Eco-Tech Student Laptop: ₹32,999. Recycled aluminum, 18-hr battery, integrated solar charging on lid. Perfect for budget-conscious creators.</textarea>
+                    <div class="card-label">Product Context</div><textarea id="product-desc" style="height:120px;">Eco-Tech Student Laptop: ₹32,
+        999. Recycled aluminum,
+        18-hr battery,
+        integrated solar charging on lid. Perfect for budget-conscious creators.</textarea>
                 </div>
             </div>
             <div id="view-ab" style="display:none;">
@@ -737,17 +1214,17 @@
                 </div>
                 <div class="grid grid-2">
                     <div class="card">
-                        <div class="card-label">Variation A</div><textarea
-                            id="desc-a">Status & Luxury: ₹1,500/mo access fee. VIP event invites and priority concierge service.</textarea>
+                        <div class="card-label">Variation A</div><textarea id="desc-a">Status & Luxury: ₹1,
+        500/mo access fee. VIP event invites and priority concierge service.</textarea>
                     </div>
                     <div class="card">
-                        <div class="card-label">Variation B</div><textarea
-                            id="desc-b">Utility & Value: ₹29/day pay-as-you-go. Cancel anytime, focused on student essentials.</textarea>
+                        <div class="card-label">Variation B</div><textarea id="desc-b">Utility & Value: ₹29/day pay-as-you-go. Cancel anytime,
+        focused on student essentials.</textarea>
                     </div>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="runSimulation()" style="margin-top:20px;">▶ RUN NEURAL
-                PROPAGATION</button>
+            <button class="btn btn-primary" onclick="runSimulation()" style="margin-top:20px;">▶ RUN
+                NEURAL PROPAGATION</button>
             <div id="res-2" style="display:none; margin-top:24px;">
                 <div class="grid grid-2">
                     <div class="card">
@@ -762,49 +1239,98 @@
                 <div class="verbatim-card">
                     <div class="card-label" style="color:var(--accent3)">Hero Persona Verification</div>
                     <p id="hero-verbatim" class="verbatim-text"></p>
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 12px;">
                         <div id="hero-name" class="verbatim-author"></div>
-                        <div id="hero-demographics" style="font-size:9px; color:var(--muted); font-weight:700;"></div>
+                        <div id="hero-demographics" style="font-size:9px; color:var(--muted); font-weight:700;">
+                        </div>
                     </div>
+                    <div id="hero-insight" class="insight-box" style="display:none;"></div>
                 </div>
             </div>
         </div>
-
         <!-- STEP 3: DRIFT -->
         <div id="page-3" class="page">
             <div class="title-block">
-                <h2>Inject Environment Drift</h2>
-                <p>Observe how macro-economic shocks and unpredictable personal life-events fracture customer intent.
+                <h2>Market Drift Simulation</h2>
+                <p>Observe real-time sentiment erosion by injecting macro-economic stressors and random personal shocks.
                 </p>
             </div>
-            <div class="grid grid-2">
-                <div class="card">
-                    <div class="card-label">Macro Stress Levels</div>
-                    <div style="margin-top:20px;">
-                        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;">
-                            <span>Annual Inflation</span><b id="inf-txt">12%</b>
+
+            <div class="driftlab-container">
+                <!-- Left: Controls -->
+                <div class="drift-controls">
+                    <section>
+                        <div class="drift-section-label">Macro Stressors</div>
+                        <div class="drift-control-group">
+                            <div class="drift-control-header"><span>Inflation</span><span class="drift-val"
+                                    id="val-inflation">3.0%</span></div>
+                            <input type="range" id="input-inflation" class="drift-slider" min="0" max="10" step="0.1"
+                                value="3.0">
                         </div>
-                        <input type="range" min="0" max="30" value="12" id="inf-input" oninput="updateShockLabels()"
-                            style="margin-bottom:20px;">
-                        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;">
-                            <span>Lending Rates</span><b id="rate-txt">9%</b>
+                        <div class="drift-control-group">
+                            <div class="drift-control-header"><span>Interest Rate</span><span class="drift-val"
+                                    id="val-rates">5.0%</span></div>
+                            <input type="range" id="input-rates" class="drift-slider" min="0" max="15" step="0.1"
+                                value="5.0">
                         </div>
-                        <input type="range" min="0" max="20" value="9" id="rate-input" oninput="updateShockLabels()">
-                    </div>
+                        <div class="drift-control-group">
+                            <div class="drift-control-header"><span>Unemployment</span><span class="drift-val"
+                                    id="val-unemployment">4.0%</span></div>
+                            <input type="range" id="input-unemployment" class="drift-slider" min="0" max="20" step="0.1"
+                                value="4.0">
+                        </div>
+                        <div class="drift-control-group">
+                            <div class="drift-control-header"><span>GDP Growth</span><span class="drift-val"
+                                    id="val-gdp">6.5%</span></div>
+                            <input type="range" id="input-gdp" class="drift-slider" min="0" max="12" step="0.1"
+                                value="6.5">
+                        </div>
+                    </section>
+
+                    <section>
+                        <div class="drift-section-label">Manual Product Faults</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <button class="trigger-btn setback-btn" data-setback="Price Hike"><span>🏷️</span> Price
+                                Hike</button>
+                            <button class="trigger-btn setback-btn" data-setback="Feature Del"><span>🚫</span> Feature
+                                Del</button>
+                            <button class="trigger-btn setback-btn" data-setback="Outage"><span>📉</span>
+                                Outage</button>
+                            <button class="trigger-btn setback-btn" data-setback="Support Lag"><span>☎️</span> Support
+                                Lag</button>
+                        </div>
+                    </section>
+
+                    <button class="btn btn-primary" onclick="propagateDrift()" style="width: 100%; margin-top: 24px;">◈
+                        FINALIZE DRIFT TRIGGERS</button>
+
+                    <button id="reset-drift-btn" class="btn btn-secondary"
+                        style="width: 100%; border-color: var(--danger); color: var(--danger); justify-content: center; margin-top: 12px;">
+                        REVERT TO BASELINE
+                    </button>
                 </div>
-                <div class="card">
-                    <div class="card-label">Neural Drift Log (Individually Tracked)</div>
-                    <div class="log-container" id="shock-log"></div>
+
+                <!-- Right: Display -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="persona-drift-grid" id="drift-cards-container">
+                        <!-- 10 Archetype Sentiment Cards populated by JS -->
+                    </div>
+
+                    <section>
+                        <div class="drift-section-label">Real-Time Behavioral Drift Log</div>
+                        <div class="drift-log-panel" id="drift-logs">
+                            <!-- Live Event Stream -->
+                        </div>
+                    </section>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="propagateDrift()">⚡ START DRIFT ENGINE</button>
         </div>
-
         <!-- STEP 4: AUDIT -->
         <div id="page-4" class="page">
             <div class="title-block">
                 <h2>Resilience Impact Audit</h2>
-                <p>Identifying the most loyal target cluster by auditing 20,000 unique intent trajectories.</p>
+                <p>Identifying the most loyal target cluster by auditing 50,000 unique intent trajectories.</p>
             </div>
             <div class="grid grid-2">
                 <div class="card">
@@ -822,120 +1348,467 @@
                         </div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-label" id="buyer-sample-title">Representative Sample (Cultural Mix)</div>
-                    <table class="leaderboard">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Age</th>
-                                <th>Gen</th>
-                                <th>State</th>
-                                <th>Archetype</th>
-                                <th>Brief</th>
-                                <th>Final Intent</th>
-                            </tr>
-                        </thead>
-                        <tbody id="audit-sample-body"></tbody>
-                    </table>
+                <div id="hero-drift-insight" class="insight-box" style="display:none;"></div>
+            </div>
+            <div class="card">
+                <div class="card-label" id="buyer-sample-title">Representative Sample (Cultural Mix)
+                </div>
+                <table class="leaderboard">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gen</th>
+                            <th>State</th>
+                            <th>Archetype</th>
+                            <th>Brief</th>
+                            <th>Final Intent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-sample-body"></tbody>
+                </table>
+            </div>
+            <button class="btn btn-primary" onclick="runResilience()" style="margin-top:20px;">◈ EXECUTE RESILIENCE
+                AUDIT</button>
+        </div>
+
+        <!-- STEP 5: MARKET PULSE COMMAND CENTER -->
+        <div id="page-5" class="page">
+            <div class="dashboard-header-pulse">
+                <div>
+                    <h2 style="font-family:'DM Serif Display'; font-size:32px; color:var(--text);">Market Pulse Command
+                        Center</h2>
+                    <div style="font-size:12px; color:var(--muted); font-family:'IBM Plex Mono'; margin-top:4px;">
+                        REACH: 50,000 HOUSEHOLDS | CONFIDENCE: <span id="pulse-conf"
+                            style="color:var(--accent3)">94.2%</span> | ENV: <span id="pulse-env"
+                            style="color:var(--accent2)">NORMAL</span>
+                    </div>
+                </div>
+                <div class="shock-badges-pulse" id="pulse-shocks">
+                    <span class="badge-mini">Inflation: +2.1%</span>
+                    <span class="badge-mini">Monsoon: Normal</span>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="runResilience()">▶ GENERATE EXECUTIVE DASHBOARD</button>
+
+            <div class="pulse-grid">
+                <!-- Quadrant 1: Intent & Revenue -->
+                <div class="pulse-quad">
+                    <div class="card-label">Purchase Intent & Revenue</div>
+                    <div class="pulse-kpi-row">
+                        <div class="pulse-kpi">
+                            <label>Probabilistic PPI</label>
+                            <span id="ppi-val">--%</span>
+                        </div>
+                        <div class="pulse-kpi">
+                            <label>Elasticity Score</label>
+                            <span id="elast-val">--</span>
+                        </div>
+                    </div>
+                    <div class="pulse-chart-mini" id="share-chart">
+                        <!-- Simulated Market Share Bar Chart -->
+                    </div>
+                </div>
+
+                <!-- Quadrant 2: Regional Heatmap (Central) -->
+                <div class="pulse-quad central-map">
+                    <div class="card-label">Regional Influence Heatmap (India)</div>
+                    <div id="india-map-container"
+                        style="height:350px; background:rgba(255,255,255,0.03); border-radius:12px; margin-top:12px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:10px;">
+                        [ SVG INDIA HEATMAP RENDERING... ]
+                    </div>
+                </div>
+
+                <!-- Quadrant 3: Cultural & Psychological -->
+                <div class="pulse-quad">
+                    <div class="card-label">Cultural & Bias Radar</div>
+                    <div class="pulse-kpi-row">
+                        <div class="pulse-kpi">
+                            <label>Resonance (CRI)</label>
+                            <span id="cri-val">--</span>
+                        </div>
+                        <div class="pulse-kpi">
+                            <label>Adoption Velocity</label>
+                            <span id="adov-val">--</span>
+                        </div>
+                    </div>
+                    <div id="bias-radar-container" style="height:150px; margin-top:12px;">
+                        <!-- Radar Chart -->
+                    </div>
+                </div>
+
+                <!-- Quadrant 4: Drift & Resilience -->
+                <div class="pulse-quad">
+                    <div class="card-label">Stress Test & Sentiment Drift</div>
+                    <div class="pulse-kpi-row">
+                        <div class="pulse-kpi">
+                            <label>Shock Resilience</label>
+                            <span id="res-val">--</span>
+                        </div>
+                        <div class="pulse-kpi">
+                            <label>Drift Velocity</label>
+                            <span id="drift-v-val">--</span>
+                        </div>
+                    </div>
+                    <div id="price-curve-container" style="height:150px; margin-top:12px;">
+                        <!-- Price Sensitivity Curve -->
+                    </div>
+                </div>
+
+                <!-- Quadrant 5: Cluster Adoption Donut -->
+                <div class="pulse-quad">
+                    <div class="card-label">Cluster Adoption Profile</div>
+                    <div id="adoption-donut-container"
+                        style="height:220px; margin-top:12px; display:flex; align-items:center; justify-content:center;">
+                        <!-- Donut Chart -->
+                    </div>
+                    <div id="adoption-legend"
+                        style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:12px; font-size:9px; color:var(--muted); font-weight:700;">
+                        <!-- Legend -->
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
-
-    <footer class="action-footer">
-        <button class="btn btn-secondary" onclick="prevStep()" id="btn-back">← Back</button>
+    <footer class="action-footer"><button class="btn btn-secondary" onclick="prevStep()" id="btn-back">← Back</button>
         <div id="status-hint" style="color:var(--muted); font-size:12px;">Phase 1: methodology Construction.</div>
         <button class="btn btn-primary" onclick="nextStep()" id="btn-next">Next Step →</button>
     </footer>
+    <script>const FIRST_NAMES = ["Rajesh",
+            "Sameet",
+            "Aditi",
+            "Vikram",
+            "Tanya",
+            "Pramod",
+            "Neha",
+            "Keshav",
+            "Sanya",
+            "Arjun",
+            "Tushar",
+            "Priya",
+            "Meera",
+            "Anil",
+            "Deepak",
+            "Riya",
+            "Kavya",
+            "Siddharth",
+            "Ishaan",
+            "Zoya"];
+        const LAST_NAMES = ["Sharma",
+            "Singh",
+            "Gupta",
+            "Kapoor",
+            "Reddy",
+            "Patel",
+            "Mehra",
+            "Verma",
+            "Iyer",
+            "Nair"];
 
-    <script>
-        const FIRST_NAMES = ["Rajesh", "Sameet", "Aditi", "Vikram", "Tanya", "Pramod", "Neha", "Keshav", "Sanya", "Arjun", "Tushar", "Priya", "Meera", "Anil", "Deepak", "Riya", "Kavya", "Siddharth", "Ishaan", "Zoya"];
-        const LAST_NAMES = ["Sharma", "Singh", "Gupta", "Kapoor", "Reddy", "Patel", "Mehra", "Verma", "Iyer", "Nair"];
+        const ARCHETYPES = [{
+            name: "The Value Dailyists", weight: 0.12, color: '#7c6af7', sensitivity: 1.5, age: 28, income: 45000, phrases: ["Budget-first daily commuter", "Utility-focused student", "Eco-conscious value hunter"]
+        }
 
-        const ARCHETYPES = [
-            { name: "The Value Dailyists", weight: 0.12, color: '#7c6af7', sensitivity: 1.5, age: 28, income: 45000, phrases: ["Budget-first daily commuter", "Utility-focused student", "Eco-conscious value hunter"] },
-            { name: "The Stressed Savers", weight: 0.15, color: '#4f46e5', sensitivity: 1.8, age: 42, income: 35000, phrases: ["Conservative family manager", "Inflation-sensitive saver", "Risk-averse budget balancing"] },
-            { name: "The Aspiring Climbers", weight: 0.18, color: '#22d3a5', sensitivity: 1.1, age: 24, income: 60000, phrases: ["Early-career tech enthusiast", "Brand-aware city dweller", "Upwardly mobile professional"] },
-            { name: "The Career Minimalists", weight: 0.10, color: '#10b981', sensitivity: 0.9, age: 35, income: 80000, phrases: ["Efficiency-driven worker", "Pragmatic tech adopter", "Low-friction lifestyle seeker"] },
-            { name: "The Premium Loyalists", weight: 0.08, color: '#f97316', sensitivity: 0.4, age: 38, income: 150000, phrases: ["Quality-first brand loyalist", "Status-aware tech investor", "Premium experience seeker"] },
-            { name: "The Heritage Elite", weight: 0.05, color: '#ea580c', sensitivity: 0.2, age: 55, income: 300000, phrases: ["Legacy asset protector", "Conservative luxury buyer", "Stability-focused decision maker"] },
-            { name: "The Budget Cautious", weight: 0.14, color: '#f43f5e', sensitivity: 1.3, age: 31, income: 28000, phrases: ["Cost-sensitive survivor", "Bargain-driven consumer", "Liquidity-focused spender"] },
-            { name: "The Risk Averse", weight: 0.10, color: '#e11d48', sensitivity: 1.4, age: 48, income: 55000, phrases: ["Stability-seeking planner", "Known-brand only adopter", "Change-resistant consumer"] },
-            { name: "The Power Professionals", weight: 0.05, color: '#ec4899', sensitivity: 0.5, age: 29, income: 180000, phrases: ["High-output city executive", "Cutting-edge tech adopter", "Value-per-hour optimizer"] },
-            { name: "The Asset Secure", weight: 0.03, color: '#db2777', sensitivity: 0.3, age: 50, income: 250000, phrases: ["Asset-backed luxury buyer", "Resilient high-net-worth", "Philanthropic trend-setter"] }
+            ,
+        {
+            name: "The Stressed Savers", weight: 0.15, color: '#4f46e5', sensitivity: 1.8, age: 42, income: 35000, phrases: ["Conservative family manager", "Inflation-sensitive saver", "Risk-averse budget balancing"]
+        }
+
+            ,
+        {
+            name: "The Aspiring Climbers", weight: 0.18, color: '#22d3a5', sensitivity: 1.1, age: 24, income: 60000, phrases: ["Early-career tech enthusiast", "Brand-aware city dweller", "Upwardly mobile professional"]
+        }
+
+            ,
+        {
+            name: "The Career Minimalists", weight: 0.10, color: '#10b981', sensitivity: 0.9, age: 35, income: 80000, phrases: ["Efficiency-driven worker", "Pragmatic tech adopter", "Low-friction lifestyle seeker"]
+        }
+
+            ,
+        {
+            name: "The Premium Loyalists", weight: 0.08, color: '#f97316', sensitivity: 0.4, age: 38, income: 150000, phrases: ["Quality-first brand loyalist", "Status-aware tech investor", "Premium experience seeker"]
+        }
+
+            ,
+        {
+            name: "The Heritage Elite", weight: 0.05, color: '#ea580c', sensitivity: 0.2, age: 55, income: 300000, phrases: ["Legacy asset protector", "Conservative luxury buyer", "Stability-focused decision maker"]
+        }
+
+            ,
+        {
+            name: "The Budget Cautious", weight: 0.14, color: '#f43f5e', sensitivity: 1.3, age: 31, income: 28000, phrases: ["Cost-sensitive survivor", "Bargain-driven consumer", "Liquidity-focused spender"]
+        }
+
+            ,
+        {
+            name: "The Risk Averse", weight: 0.10, color: '#e11d48', sensitivity: 1.4, age: 48, income: 55000, phrases: ["Stability-seeking planner", "Known-brand only adopter", "Change-resistant consumer"]
+        }
+
+            ,
+        {
+            name: "The Power Professionals", weight: 0.05, color: '#ec4899', sensitivity: 0.5, age: 29, income: 180000, phrases: ["High-output city executive", "Cutting-edge tech adopter", "Value-per-hour optimizer"]
+        }
+
+            ,
+        {
+            name: "The Asset Secure", weight: 0.03, color: '#db2777', sensitivity: 0.3, age: 50, income: 250000, phrases: ["Asset-backed luxury buyer", "Resilient high-net-worth", "Philanthropic trend-setter"]
+        }
+
         ];
 
         let agents = [];
         let currentStep = 1;
         let simMode = 'acceptance';
-        let stepCompleted = [false, false, false, false, false, false];
-        let popSize = 20000;
+        let stepCompleted = [false,
+            false,
+            false,
+            false,
+            false,
+            false];
+        let popSize = 50000;
         let heroAgent = null;
         let targetCluster = "";
 
-        const SHOCK_LIBRARY = [
-            { type: "HEALTH EMERGENCY", text: "Sudden medical hospitalization in family. Emergency savings diverted.", drop: 25 },
-            { type: "RENTAL SPIKE", text: "Property owner increased rent by 20% overnight. Disposable income crashed.", drop: 15 },
-            { type: "JOB RESTRUCTURING", text: "Corporate downsizing announced. Transitioning to survival mode.", drop: 30 },
-            { type: "VEHICLE REPAIR", text: "Major mechanical failure in primary transport. High upfront cost.", drop: 12 },
-            { type: "FAMILY EVENT", text: "Unplanned social obligation/wedding. Liquidity drained.", drop: 20 }
+        const SHOCK_LIBRARY = [{
+            type: "HEALTH EMERGENCY", text: "Sudden medical hospitalization in family. Emergency savings diverted.", drop: 25
+        }
+
+            ,
+        {
+            type: "RENTAL SPIKE", text: "Property owner increased rent by 20% overnight. Disposable income crashed.", drop: 15
+        }
+
+            ,
+        {
+            type: "JOB RESTRUCTURING", text: "Corporate downsizing announced. Transitioning to survival mode.", drop: 30
+        }
+
+            ,
+        {
+            type: "VEHICLE REPAIR", text: "Major mechanical failure in primary transport. High upfront cost.", drop: 12
+        }
+
+            ,
+        {
+            type: "FAMILY EVENT", text: "Unplanned social obligation/wedding. Liquidity drained.", drop: 20
+        }
+
         ];
 
         // Cultural Bias Layer - Hofstede India Engine
-        const FACTOR_WEIGHTS = { "PDI": 0.20, "IDV": 0.25, "UAI": 0.25, "LTO": 0.20, "IVR": 0.10 };
-        const INDIA_BASE = { "PDI": 60, "IDV": 45, "UAI": 42, "LTO": 50, "IVR": 28 };
+        const FACTOR_WEIGHTS = {
+            "PDI": 0.20, "IDV": 0.25, "UAI": 0.25, "LTO": 0.20, "IVR": 0.10
+        }
+
+            ;
+
+        const INDIA_BASE = {
+            "PDI": 60, "IDV": 45, "UAI": 42, "LTO": 50, "IVR": 28
+        }
+
+            ;
 
         const STATE_RULES = {
-            "Kerala": [
-                { factor: "PDI", delta: -13, reason: "high literacy + egalitarianism" },
-                { factor: "IDV", delta: +17, reason: "NRI remittance agency" },
-                { factor: "UAI", delta: -10, reason: "ambiguity normalization" },
-                { factor: "LTO", delta: +15, reason: "generational edu-investment" },
-                { factor: "IVR", delta: +7, reason: "Gulf lifestyle exposure" }
+            "Kerala": [{
+                factor: "PDI", delta: -13, reason: "high literacy + egalitarianism"
+            }
+
+                ,
+            {
+                factor: "IDV", delta: +17, reason: "NRI remittance agency"
+            }
+
+                ,
+            {
+                factor: "UAI", delta: -10, reason: "ambiguity normalization"
+            }
+
+                ,
+            {
+                factor: "LTO", delta: +15, reason: "generational edu-investment"
+            }
+
+                ,
+            {
+                factor: "IVR", delta: +7, reason: "Gulf lifestyle exposure"
+            }
+
             ],
-            "Gujarat": [
-                { factor: "IDV", delta: +20, reason: "entrepreneurial DNA" },
-                { factor: "UAI", delta: -12, reason: "diamond/mercantile risk-comfort" },
-                { factor: "LTO", delta: +20, reason: "long-horizon wealth accumulation" },
-                { factor: "IVR", delta: -10, reason: "austerity culture" }
+            "Gujarat": [{
+                factor: "IDV", delta: +20, reason: "entrepreneurial DNA"
+            }
+
+                ,
+            {
+                factor: "UAI", delta: -12, reason: "diamond/mercantile risk-comfort"
+            }
+
+                ,
+            {
+                factor: "LTO", delta: +20, reason: "long-horizon wealth accumulation"
+            }
+
+                ,
+            {
+                factor: "IVR", delta: -10, reason: "austerity culture"
+            }
+
             ],
-            "Goa": [
-                { factor: "PDI", delta: -8, reason: "Portuguese legacy" },
-                { factor: "IDV", delta: +20, reason: "tourism individual initiative" },
-                { factor: "LTO", delta: -8, reason: "present-focused leisure" },
-                { factor: "IVR", delta: +44, reason: "highest indulgence index" }
+            "Goa": [{
+                factor: "PDI", delta: -8, reason: "Portuguese legacy"
+            }
+
+                ,
+            {
+                factor: "IDV", delta: +20, reason: "tourism individual initiative"
+            }
+
+                ,
+            {
+                factor: "LTO", delta: -8, reason: "present-focused leisure"
+            }
+
+                ,
+            {
+                factor: "IVR", delta: +44, reason: "highest indulgence index"
+            }
+
             ],
-            "Maharashtra": [
-                { factor: "IDV", delta: +10, reason: "urban competitive center" },
-                { factor: "PDI", delta: +5, reason: "corporate hierarchy" },
-                { factor: "IVR", delta: +15, reason: "cosmopolitan spending" }
+            "Maharashtra": [{
+                factor: "IDV", delta: +10, reason: "urban competitive center"
+            }
+
+                ,
+            {
+                factor: "PDI", delta: +5, reason: "corporate hierarchy"
+            }
+
+                ,
+            {
+                factor: "IVR", delta: +15, reason: "cosmopolitan spending"
+            }
+
             ],
-            "Tamil Nadu": [
-                { factor: "LTO", delta: +18, reason: "conservative asset building" },
-                { factor: "UAI", delta: +10, reason: "process-driven discipline" },
-                { factor: "PDI", delta: +5, reason: "structured institutionalism" }
+            "Tamil Nadu": [{
+                factor: "LTO", delta: +18, reason: "conservative asset building"
+            }
+
+                ,
+            {
+                factor: "UAI", delta: +10, reason: "process-driven discipline"
+            }
+
+                ,
+            {
+                factor: "PDI", delta: +5, reason: "structured institutionalism"
+            }
+
             ],
-            "Punjab": [
-                { factor: "IVR", delta: +25, reason: "agrarian prosperity + hospitality" },
-                { factor: "IDV", delta: +10, reason: "pioneer/migrant spirit" },
-                { factor: "UAI", delta: -5, reason: "robust risk appetite" }
+            "Punjab": [{
+                factor: "IVR", delta: +25, reason: "agrarian prosperity + hospitality"
+            }
+
+                ,
+            {
+                factor: "IDV", delta: +10, reason: "pioneer/migrant spirit"
+            }
+
+                ,
+            {
+                factor: "UAI", delta: -5, reason: "robust risk appetite"
+            }
+
             ],
-            "West Bengal": [
-                { factor: "IDV", delta: -10, reason: "collectivist intellectualism" },
-                { factor: "PDI", delta: -5, reason: "unionized egalitarian roots" },
-                { factor: "LTO", delta: +10, reason: "cultural preservation" }
+            "West Bengal": [{
+                factor: "IDV", delta: -10, reason: "collectivist intellectualism"
+            }
+
+                ,
+            {
+                factor: "PDI", delta: -5, reason: "unionized egalitarian roots"
+            }
+
+                ,
+            {
+                factor: "LTO", delta: +10, reason: "cultural preservation"
+            }
+
             ],
-            "Karnataka": [
-                { factor: "IDV", delta: +15, reason: "tech-driven meritocracy" },
-                { factor: "PDI", delta: -5, reason: "start-up flattening" },
-                { factor: "IVR", delta: +10, reason: "entertainment-first city culture" }
+            "Karnataka": [{
+                factor: "IDV", delta: +15, reason: "tech-driven meritocracy"
+            }
+
+                ,
+            {
+                factor: "PDI", delta: -5, reason: "start-up flattening"
+            }
+
+                ,
+            {
+                factor: "IVR", delta: +10, reason: "entertainment-first city culture"
+            }
+
             ]
-        };
+        }
+
+            ;
 
         const STATES = Object.keys(STATE_RULES);
-        const GENDERS = ["Male", "Female"];
+        const GENDERS = ["Male",
+            "Female"];
+
+        function toggleStateDropdown() {
+            const options = document.getElementById('state-options');
+            const trigger = document.getElementById('state-trigger');
+            options.classList.toggle('open');
+            trigger.classList.toggle('open');
+        }
+
+        function initStatesUI() {
+            const container = document.getElementById('state-options');
+            container.innerHTML = '';
+
+            STATES.forEach(state => {
+                const div = document.createElement('div');
+                div.className = 'state-option';
+
+                div.innerHTML = `<input type="checkbox" value="${state}" id="st-${state}" checked> <label for="st-${state}">${state}</label>`;
+
+                div.onclick = (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        const cb = div.querySelector('input');
+                        cb.checked = !cb.checked;
+                    }
+
+                    updateStateTriggerLabel();
+                }
+
+                    ;
+                container.appendChild(div);
+            });
+        }
+
+        function updateStateTriggerLabel() {
+            const selected = Array.from(document.querySelectorAll('#state-options input:checked')).map(cb => cb.value);
+            const trigger = document.getElementById('state-trigger');
+            if (selected.length === 0) trigger.innerText = "Select Target States (All by default)";
+            else if (selected.length === STATES.length) trigger.innerText = "All States Selected";
+            else trigger.innerText = selected.join(', ');
+        }
+
+        function getTargetStates() {
+            const selected = Array.from(document.querySelectorAll('#state-options input:checked')).map(cb => cb.value);
+            return selected.length > 0 ? selected : STATES;
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const container = document.querySelector('.state-selector-container');
+
+            if (container && !container.contains(e.target)) {
+                document.getElementById('state-options').classList.remove('open');
+                document.getElementById('state-trigger').classList.remove('open');
+            }
+        });
 
         function setMode(mode) {
             simMode = mode;
@@ -954,23 +1827,32 @@
         }
 
         function initAgents() {
-            showOverlay("Cloning Population DNA...", ["Constructing 20,000 Neural Nodes...", "Mapping Psychological Profiles...", "Seeding Demographic Variance..."], () => {
+            showOverlay("Cloning Population DNA...", [`Constructing ${popSize.toLocaleString()} Neural Nodes...`, "Mapping Psychological Profiles...", "Seeding Demographic Variance..."], () => {
                 agents = [];
                 const track = document.getElementById('census-track');
                 const legend = document.getElementById('census-legend');
                 track.innerHTML = ''; legend.innerHTML = '';
 
+                const targetStates = getTargetStates();
+
                 ARCHETYPES.forEach(a => {
                     const count = Math.floor(popSize * a.weight);
-                    track.innerHTML += `<div class="census-seg" style="width:${a.weight * 100}%; background:${a.color}"></div>`;
+                    track.innerHTML += `<div class="census-seg" style="width:${a.weight * 100}%; background:${a.color}" ></div>`;
+
                     legend.innerHTML += `<div><span style="color:${a.color}">●</span> <b>${a.name}</b></div>`;
+
                     for (let i = 0; i < count; i++) {
-                        const state = STATES[Math.floor(Math.random() * STATES.length)];
+                        const state = targetStates[Math.floor(Math.random() * targetStates.length)];
                         const gender = GENDERS[Math.floor(Math.random() * GENDERS.length)];
                         const bio = a.phrases[Math.floor(Math.random() * a.phrases.length)];
 
                         // Build individual Hofstede profile
-                        let hProf = { ...INDIA_BASE };
+                        let hProf = {
+                            ...INDIA_BASE
+                        }
+
+                            ;
+
                         if (STATE_RULES[state]) {
                             STATE_RULES[state].forEach(rule => {
                                 hProf[rule.factor] = Math.max(10, Math.min(95, hProf[rule.factor] + rule.delta));
@@ -978,6 +1860,7 @@
                         }
 
                         agents.push({
+                            id: agents.length,
                             name: FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)] + " " + LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)],
                             type: a.name, color: a.color, sens: a.sensitivity,
                             age: a.age + Math.floor(Math.random() * 15),
@@ -997,121 +1880,281 @@
             });
         }
 
+        function score(txt, a) {
+            let s = 50;
+            if ((txt.includes('daily') || txt.includes('utility') || txt.includes('eco')) && a.income < 70000) s += 15;
+            if ((txt.includes('premium') || txt.includes('luxury')) && a.income > 150000) s += 20;
+
+            // Cultural Fit Logic
+            let cFit = 0;
+            const p = a.hProf;
+
+            // High PDI (Hierarchy fit) - weight 0.20
+            if (txt.includes('loyalty') || txt.includes('established') || txt.includes('status')) cFit += (p.PDI / 100) * 10;
+
+            // IDV (Individuality vs Agreeableness) - weight 0.25
+            if (txt.includes('custom') || txt.includes('unique')) cFit += (p.IDV / 100) * 12;
+            else cFit += ((100 - p.IDV) / 100) * 8; // Collectivist fit
+
+            // UAI (Risk tolerance) - weight 0.25
+            if (txt.includes('secure') || txt.includes('guarantee') || txt.includes('warranty')) cFit += (p.UAI / 100) * 15;
+            else if (txt.includes('innovative') || txt.includes('experimental')) cFit += ((100 - p.UAI) / 100) * 15;
+
+            // LTO (Investment horizon) - weight 0.20
+            if (txt.includes('longevity') || txt.includes('durable')) cFit += (p.LTO / 100) * 12;
+
+            // IVR (Indulgence weight) - 0.10
+            if (txt.includes('fun') || txt.includes('joy') || txt.includes('gift')) cFit += (p.IVR / 100) * 10;
+
+            return Math.min(100, s + cFit + (Math.random() * 15));
+        }
+
         function runSimulation() {
             showOverlay("Neural Simulation...", ["Analyzing Semantic Resonance...", "Mapping Individual Intent...", "Finalizing Baseline Fit..."], () => {
                 const txtA = document.getElementById('desc-a').value.toLowerCase();
                 const txtB = document.getElementById('desc-b').value.toLowerCase();
                 const prod = document.getElementById('product-desc').value.toLowerCase();
 
-                function score(txt, a) {
-                    let s = 50;
-                    if ((txt.includes('daily') || txt.includes('utility') || txt.includes('eco')) && a.income < 70000) s += 15;
-                    if ((txt.includes('premium') || txt.includes('luxury')) && a.income > 150000) s += 20;
-
-                    // Cultural Fit Logic
-                    let cFit = 0;
-                    const p = a.hProf;
-
-                    // High PDI (Hierarchy fit) - weight 0.20
-                    if (txt.includes('loyalty') || txt.includes('established') || txt.includes('status')) cFit += (p.PDI / 100) * 10;
-
-                    // IDV (Individuality vs Agreeableness) - weight 0.25
-                    if (txt.includes('custom') || txt.includes('unique')) cFit += (p.IDV / 100) * 12;
-                    else cFit += ((100 - p.IDV) / 100) * 8; // Collectivist fit
-
-                    // UAI (Risk tolerance) - weight 0.25
-                    if (txt.includes('secure') || txt.includes('guarantee') || txt.includes('warranty')) cFit += (p.UAI / 100) * 15;
-                    else if (txt.includes('innovative') || txt.includes('experimental')) cFit += ((100 - p.UAI) / 100) * 15;
-
-                    // LTO (Investment horizon) - weight 0.20
-                    if (txt.includes('longevity') || txt.includes('durable')) cFit += (p.LTO / 100) * 12;
-
-                    // IVR (Indulgence weight) - 0.10
-                    if (txt.includes('fun') || txt.includes('joy') || txt.includes('gift')) cFit += (p.IVR / 100) * 10;
-
-                    return Math.min(100, s + cFit + (Math.random() * 15));
-                }
-
+                let strategyText = "";
                 if (simMode === 'ab') {
                     let totalA = 0, totalB = 0;
-                    agents.forEach(a => { totalA += score(txtA, a); totalB += score(txtB, a); });
+
+                    agents.forEach(a => {
+                        totalA += score(txtA, a); totalB += score(txtB, a);
+                    });
                     const winA = totalA > totalB;
                     document.getElementById('res2-val1').innerText = winA ? "Strategy A" : "Strategy B";
                     document.getElementById('res2-val2').innerText = ((winA ? totalA : totalB) / popSize).toFixed(0) + "% Fit";
                     agents.forEach(a => a.base = winA ? score(txtA, a) : score(txtB, a));
-                } else {
+                    strategyText = winA ? txtA : txtB;
+                }
+
+                else {
                     document.getElementById('res2-val1').innerText = "High Interest";
                     let sum = 0;
-                    agents.forEach(a => { a.base = score(prod, a); sum += a.base; });
+
+                    agents.forEach(a => {
+                        a.base = score(prod, a); sum += a.base;
+                    });
                     document.getElementById('res2-val2').innerText = (sum / popSize).toFixed(0) + "% Intent";
+                    strategyText = prod;
                 }
 
                 agents.forEach(a => a.current = a.base);
                 document.getElementById('hero-name').innerText = heroAgent.name + " (" + heroAgent.type + ")";
-                document.getElementById('hero-demographics').innerText = `${heroAgent.age}yr | ${heroAgent.gender} | ${heroAgent.state}`;
-                document.getElementById('hero-verbatim').innerText = `"Considering my current lifestyle, I'm ${heroAgent.base.toFixed(0)}% certain about this. It seems to resonate with my priorities."`;
+
+                document.getElementById('hero-demographics').innerText = `${heroAgent.age} yr | ${heroAgent.gender} | ${heroAgent.state}`;
+                document.getElementById('hero-verbatim').innerText = `"Considering my current lifestyle, I'm ${heroAgent.base.toFixed(0)}% certain about this. It seems to resonate with my priorities." `;
+                updateInsightUI('hero-insight', getHeroInsight(heroAgent, heroAgent.base, strategyText));
                 document.getElementById('res-2').style.display = 'block';
                 stepCompleted[2] = true;
                 notify("Baseline Intelligence Logged.");
             });
         }
 
+        let driftActiveSetback = null;
+        let driftPersonas = []; // 10 representative personas
+
+        function initDriftUI() {
+            const container = document.getElementById('drift-cards-container');
+            container.innerHTML = '';
+            driftPersonas = [];
+
+            // Pick 1 representative from each of the 10 archetypes
+            // Sort agents by intent to pick the 'best' representative for the dashboard
+            ARCHETYPES.forEach((arch, i) => {
+                const group = agents.filter(a => a.type === arch.name);
+                if (group.length > 0) {
+                    // Pick the median agent in terms of intent to represent the cluster accurately
+                    group.sort((a, b) => b.base - a.base);
+                    const rep = group[Math.floor(group.length / 2)];
+                    driftPersonas.push(rep);
+
+                    container.innerHTML += `
+                        <div class="drift-card" id="drift-card-${rep.id}">
+                            <div class="drift-card-name">${rep.type}</div>
+                            <div class="drift-card-label">${rep.name}</div>
+                            <div class="drift-stat"><label>UAI (Uncertainty)</label><span id="drift-rt-${rep.id}">${Math.round(rep.hProf.UAI)}</span></div>
+                            <div class="drift-stat"><label>PDI (Authority)</label><span id="drift-sp-${rep.id}">${Math.round(rep.hProf.PDI)}</span></div>
+                            <div class="drift-stat"><label>Income Tier</label><span>${rep.income > 100000 ? 'High' : (rep.income > 50000 ? 'Mid' : 'Base')}</span></div>
+                            <div class="drift-prob-container">
+                                <div class="drift-prob-header"><span>Purchase Intent</span><span id="drift-prob-${rep.id}">${Math.round(rep.current)}%</span></div>
+                                <div class="drift-prob-bar"><div class="drift-prob-fill" id="drift-bar-${rep.id}" style="width:${rep.current}%"></div></div>
+                                <div id="drift-pill-${rep.id}" class="drift-pill ${rep.current < rep.base ? 'down' : ''}">${rep.current < rep.base ? (rep.current - rep.base).toFixed(1) + '%' : 'STABLE'}</div>
+                                <div id="drift-shock-${rep.id}" class="drift-shock-pill" style="display:none"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            updateDriftSimulation();
+        }
+
+        function updateDriftSimulation() {
+            const inflation = parseFloat(document.getElementById('input-inflation').value);
+            const rates = parseFloat(document.getElementById('input-rates').value);
+            const unemployment = parseFloat(document.getElementById('input-unemployment').value);
+            const gdp = parseFloat(document.getElementById('input-gdp').value);
+
+            // Simple FSI (Financial Stress Index) derivation
+            let fsi = (0.4 * inflation) + (0.3 * rates) + (0.3 * unemployment);
+            fsi = fsi * (1 - (0.015 * Math.max(0, gdp - 6.0)));
+
+            const logPanel = document.getElementById('drift-logs');
+
+            driftPersonas.forEach(p => {
+                const card = document.getElementById(`drift-card-${p.id}`);
+                if (!card) return;
+                card.classList.remove('active-shock');
+
+                // 1. Macro Impact (FSI)
+                const macroDelta = (fsi * 1.5 * (p.sens || 1.0));
+
+                // 2. Personal Shock (8% chance)
+                let psDrop = 0;
+                let activeShock = null;
+                if (Math.random() < 0.08) {
+                    const shocks = ["Medical Emergency", "Income Setback", "Major Repair", "Digital Burnout"];
+                    activeShock = shocks[Math.floor(Math.random() * shocks.length)];
+                    psDrop = 15;
+                    card.classList.add('active-shock');
+                    addDriftLog(p.name, activeShock, "PERSONAL SHOCK");
+                }
+
+                // 3. Cultural Friction (Calibrated for India Baseline)
+                let culDrop = 0;
+                const culturalFriction = (p.hProf.PDI > 55 && inflation > 5.5) || (p.hProf.UAI > 40 && rates > 4.5);
+                if (culturalFriction && Math.random() < 0.35) { // High visibility
+                    culDrop = 10;
+                    const reason = p.hProf.PDI > 60 ? "Hierarchy resistance" : "Risk avoidance";
+                    addDriftLog(p.name, reason, "CULTURAL SHOCK");
+                }
+
+                if (driftActiveSetback) culDrop += 15;
+
+                // Intent Calculation
+                p.current = Math.max(5, p.base - macroDelta - psDrop - culDrop);
+
+                // Frequent Macro Logs during simulation
+                if (Math.random() < 0.08) {
+                    addDriftLog(p.name, "Market volatility", "MACRO SHOCK");
+                }
+
+                // UI Update
+                const prob = p.current;
+                const delta = p.current - p.base;
+                document.getElementById(`drift-prob-${p.id}`).innerText = Math.round(prob) + "%";
+                document.getElementById(`drift-bar-${p.id}`).style.width = prob + "%";
+                const pill = document.getElementById(`drift-pill-${p.id}`);
+                pill.className = "drift-pill " + (delta < 0 ? "down" : "up");
+                pill.innerText = delta < 0 ? `DRIFT: ${delta.toFixed(1)}%` : "STABLE";
+
+                const shockPill = document.getElementById(`drift-shock-${p.id}`);
+                shockPill.style.display = activeShock ? "block" : "none";
+                if (activeShock) shockPill.innerText = `⚡ ${activeShock}`;
+            });
+
+            // 4. Propagate to ALL 50,000 agents for Audit parity
+            agents.forEach(a => {
+                const mDelta = (fsi * 1.5 * (a.sens || 1.0));
+                let ps = Math.random() < 0.02 ? 20 : 0;
+                let cul = (a.hProf.UAI > 40 && rates > 4.5) ? 10 : 0;
+                if (driftActiveSetback) cul += 15; // Sync setbacks in real-time
+                a.current = Math.max(5, a.base - mDelta - ps - cul);
+            });
+        }
+
+        function addDriftLog(name, event, type) {
+            const panel = document.getElementById('drift-logs');
+            const time = new Date().toLocaleTimeString([], { hour12: false });
+            const entry = document.createElement('div');
+
+            let typeCls = "macro";
+            let icon = "◈";
+            if (type === "PERSONAL SHOCK") { typeCls = "personal"; icon = "⚡"; }
+            if (type === "CULTURAL SHOCK") { typeCls = "cultural"; icon = "🕉"; }
+
+            entry.className = `drift-log-entry ${typeCls}`;
+            entry.innerHTML = `<span class="drift-log-time">[${time}]</span> ${icon} <span class="drift-log-shock" style="color:${typeCls === 'personal' ? 'var(--accent2)' : (typeCls === 'cultural' ? 'var(--accent3)' : 'var(--accent)')}">[${type}]</span> <b>${name}</b>: ${event}`;
+            panel.prepend(entry);
+            if (panel.childNodes.length > 50) panel.lastChild.remove();
+        }
+
         function propagateDrift() {
-            const inf = parseInt(document.getElementById('inf-input').value);
-            const rate = parseInt(document.getElementById('rate-input').value);
-            showOverlay("Environment Drift...", ["Inducing Macro Shocks...", "Spawning Random Life Events...", "Tracing Intent Fracture..."], () => {
-                const log = document.getElementById('shock-log'); log.innerHTML = '';
+            // This now acts as the 'Commit' phase to Step 4
+            showOverlay("Syncing 50,000 Intent Trajectories...", ["Propagating Macro Drift...", "Applying Monte Carlo Personal Shocks...", "Finalizing Cultural Friction Layer..."], () => {
+                const inf = parseFloat(document.getElementById('input-inflation').value);
+                const rate = parseFloat(document.getElementById('input-rates').value);
+                const unemp = parseFloat(document.getElementById('input-unemployment').value);
+                const gdp = parseFloat(document.getElementById('input-gdp').value);
 
-                // Track counts for balanced logging (10 each)
-                let counts = { macro: 0, personal: 0, cultural: 0 };
-                const logLimit = 10;
+                let fsi = (0.4 * inf) + (0.3 * rate) + (0.3 * unemp);
+                fsi = fsi * (1 - (0.015 * Math.max(0, gdp - 6.0)));
 
-                agents.forEach((a, i) => {
-                    const macroDrop = (inf / 100 + rate / 100) * a.sens * 12;
-                    let psDrop = 0;
-                    let culDrop = 0;
+                agents.forEach(a => {
+                    const mDelta = (fsi * 1.5 * (a.sens || 1.0));
+                    let ps = Math.random() < 0.02 ? 20 : 0; // 2% chance of severe personal shock in population
+                    let cul = (a.hProf.UAI > 40 && rate > 4.5) ? 10 : 0;
+                    if (driftActiveSetback) cul += 15; // Commit product setback to population
 
-                    // 1. Macromicro Shock (Indices for 10 guaranteed logs)
-                    if (counts.macro < logLimit && i % Math.floor(popSize / 15) === 0) {
-                        log.innerHTML += `<div class="log-line shock">◈ [MACRO SHOCK] <b>${a.name}</b> intent eroded: -${macroDrop.toFixed(0)}% <small>State: ${a.state} | Rationale: High inflation sensitivity + income strain.</small></div>`;
-                        counts.macro++;
-                    }
-
-                    // 2. Personal Shock (Random Life Event)
-                    const hasPersonal = Math.random() < 0.05;
-                    if (hasPersonal) {
-                        const shock = SHOCK_LIBRARY[Math.floor(Math.random() * SHOCK_LIBRARY.length)];
-                        psDrop = shock.drop;
-                        if (counts.personal < logLimit) {
-                            log.innerHTML += `<div class="log-line personal">⚡ [${shock.type}] <b>${a.name}</b> intent crashed: -${psDrop.toFixed(0)}% <small>${shock.text}</small></div>`;
-                            counts.personal++;
-                        }
-                    }
-
-                    // 3. Cultural Bias/Friction
-                    // Thresholds adjusted: PDI > 60 (Hierarchy sensitivity) or UAI > 50 (Risk sensitivity)
-                    const culturalFriction = (a.hProf.PDI > 60 && inf > 6) || (a.hProf.UAI > 50 && rate > 4);
-                    if (culturalFriction) {
-                        culDrop = 12 + Math.random() * 8;
-                        if (counts.cultural < logLimit) {
-                            const reason = a.hProf.PDI > 60 ? "Bureaucratic friction: Regional PDI hierarchy resists market shifts" : "Uncertainty avoidance (UAI): Local risk culture triggers panic divestment";
-                            log.innerHTML += `<div class="log-line cultural">🕉 [CULTURAL FRICTION] <b>${a.name}</b> (${a.state}): -${culDrop.toFixed(0)}% <small>Rationale: ${reason}.</small></div>`;
-                            counts.cultural++;
-                        }
-                    }
-
-                    a.current = Math.max(0, a.current - macroDrop - psDrop - culDrop);
+                    a.current = Math.max(5, a.base - mDelta - ps - cul);
                 });
 
                 stepCompleted[3] = true;
-                notify("Market Fracture Complete. Cultural logs synced.");
+                notify("Market Fracture Normalized.");
+                goToStep(4);
+            });
+        }
+
+        // Initialize Step 3 Events
+        function initStep3Events() {
+            document.querySelectorAll('.drift-slider').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const valId = e.target.id.replace('input-', 'val-');
+                    document.getElementById(valId).innerText = e.target.value + (e.target.id === 'val-gdp' ? '%' : '%');
+                    updateDriftSimulation();
+                });
+            });
+
+            document.querySelectorAll('.setback-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const setback = e.currentTarget.getAttribute('data-setback');
+                    document.querySelectorAll('.setback-btn').forEach(b => b.classList.remove('active'));
+                    if (driftActiveSetback === setback) {
+                        driftActiveSetback = null;
+                    } else {
+                        driftActiveSetback = setback;
+                        e.currentTarget.classList.add('active');
+                    }
+                    updateDriftSimulation();
+                });
+            });
+
+            document.getElementById('reset-drift-btn').addEventListener('click', () => {
+                document.getElementById('input-inflation').value = 3.0;
+                document.getElementById('input-rates').value = 5.0;
+                document.getElementById('input-unemployment').value = 4.0;
+                document.getElementById('input-gdp').value = 6.5;
+                document.querySelectorAll('.drift-val').forEach(v => {
+                    if (v.id === 'val-inflation') v.innerText = "3.0%";
+                    if (v.id === 'val-rates') v.innerText = "5.0%";
+                    if (v.id === 'val-unemployment') v.innerText = "4.0%";
+                    if (v.id === 'val-gdp') v.innerText = "6.5%";
+                });
+                driftActiveSetback = null;
+                document.querySelectorAll('.setback-btn').forEach(b => b.classList.remove('active'));
+                updateDriftSimulation();
             });
         }
 
         function runResilience() {
-            showOverlay("Calibrating Dashboard...", ["Filtering Buyer Clusters...", "Stratifying Representative Sample...", "Drawing Sentiment Curves..."], () => {
+            showOverlay("Executing Resilience Audit...", ["Auditing 50,000 Neural trajectories...", "Calculating Intent Fracture (Pre vs Post)...", "Stratifying Representative Sample..."], () => {
+
                 // Find target cluster
-                const clusterAvg = {};
+                const clusterAvg = {}
+
+                    ;
+
                 ARCHETYPES.forEach(arch => {
                     const group = agents.filter(a => a.type === arch.name);
                     clusterAvg[arch.name] = group.reduce((s, a) => s + a.current, 0) / (group.length || 1);
@@ -1122,8 +2165,10 @@
                 document.getElementById('hero-pre-val').innerText = heroAgent.base.toFixed(0) + "%";
                 document.getElementById('hero-post-val').innerText = heroAgent.current.toFixed(0) + "%";
                 document.getElementById('hero-drift-name').innerText = heroAgent.name;
-                document.getElementById('hero-drift-demographics').innerText = `${heroAgent.age}yr | ${heroAgent.gender} | ${heroAgent.state}`;
-                document.getElementById('hero-drift-verbatim').innerText = `"Drift has changed my outlook. I've gone from ${heroAgent.base.toFixed(0)}% to ${heroAgent.current.toFixed(0)}% because I've had to reprioritize my survival budget."`;
+                document.getElementById('hero-drift-demographics').innerText = `${heroAgent.age} yr | ${heroAgent.gender} | ${heroAgent.state}`;
+
+                document.getElementById('hero-drift-verbatim').innerText = `"Drift has changed my outlook. I've gone from ${heroAgent.base.toFixed(0)}% to ${heroAgent.current.toFixed(0)}% because I've had to reprioritize my survival budget." `;
+                updateInsightUI('hero-drift-insight', getHeroInsight(heroAgent, heroAgent.current, "drifted market"));
 
                 // Stratified Sample (Random 10 with mixed intent)
                 const buyerGroup = agents.filter(a => a.type === targetCluster);
@@ -1140,27 +2185,23 @@
                         const remaining = group.filter(p => !mix.includes(p));
                         mix.push(remaining[Math.floor(Math.random() * remaining.length)]);
                     }
+
                     return mix.sort(() => 0.5 - Math.random());
                 }
 
                 const mixed10 = getStratifiedMix(buyerGroup);
                 const body = document.getElementById('audit-sample-body'); body.innerHTML = '';
+
                 mixed10.forEach(p => {
                     const cls = p.current <= 50 ? 'low' : (p.current <= 75 ? 'mid' : 'high');
-                    body.innerHTML += `<tr>
-                        <td>${p.name}</td>
-                        <td>${p.age}</td>
-                        <td>${p.gender[0]}</td>
-                        <td>${p.state}</td>
-                        <td>${p.type}</td>
-                        <td>${p.bio}</td>
-                        <td class="score ${cls}">${p.current.toFixed(0)}%</td>
-                    </tr>`;
+
+                    body.innerHTML += `<tr><td>${p.name}</td><td>${p.age}</td><td>${p.gender[0]}</td><td>${p.state}</td><td>${p.type}</td><td>${p.bio}</td><td class="score ${cls}">${p.current.toFixed(0)}%</td></tr>`;
                 });
 
                 document.getElementById('buyer-sample-title').innerText = `Stratified Representative Sample (${targetCluster})`;
                 stepCompleted[4] = true;
                 notify("Dashboard Calibrated.");
+                generateFinalReport();
             });
         }
 
@@ -1173,22 +2214,18 @@
             document.getElementById('rep-post').innerText = avgPost.toFixed(0) + "%";
             document.getElementById('rep-winner').innerText = targetCluster;
 
-            // Generate Dashboard Chart
-            const chart = document.getElementById('dashboard-chart'); chart.innerHTML = '';
+            const chart = document.getElementById('dashboard-chart');
+            chart.innerHTML = '';
+
             ARCHETYPES.forEach(arch => {
                 const group = agents.filter(a => a.type === arch.name);
                 const avg = group.reduce((s, a) => s + a.current, 0) / (group.length || 1);
                 const isWinner = arch.name === targetCluster;
-                chart.innerHTML += `
-                    <div class="chart-bar-wrapper">
-                        <div class="chart-bar ${isWinner ? 'winner' : ''}" style="height:${avg * 1.5}px" data-val="${avg.toFixed(0)}"></div>
-                        <div class="chart-label">${arch.name.split(' ')[1]}</div>
-                    </div>
-                `;
+                chart.innerHTML += `<div class="chart-bar-wrapper"><div class="chart-bar ${isWinner ? 'winner' : ''}" style="height:${avg * 1.5}px" data-val="${avg.toFixed(0)}"></div><div class="chart-label">${arch.name.split(' ')[1]}</div></div>`;
             });
 
-            // Representative Report Sample (New Stratified Pull)
-            const repBody = document.getElementById('rep-sample-body'); repBody.innerHTML = '';
+            const repBody = document.getElementById('rep-sample-body');
+            repBody.innerHTML = '';
             const buyerGroup = agents.filter(a => a.type === targetCluster);
 
             const fresh10 = (function (group) {
@@ -1197,6 +2234,7 @@
                 const low = group.filter(p => p.current < 40);
                 const pick = (arr, n) => [...arr].sort(() => 0.5 - Math.random()).slice(0, n);
                 let mix = [...pick(high, 3), ...pick(med, 4), ...pick(low, 3)];
+
                 while (mix.length < 10 && group.length > mix.length) {
                     const remaining = group.filter(p => !mix.includes(p));
                     mix.push(remaining[Math.floor(Math.random() * remaining.length)]);
@@ -1207,77 +2245,454 @@
             fresh10.forEach(p => {
                 const tier = p.current >= 70 ? "High" : (p.current >= 40 ? "Mid" : "Low");
                 const cls = p.current <= 50 ? 'low' : (p.current <= 75 ? 'mid' : 'high');
-                repBody.innerHTML += `<tr>
-                    <td><b>${p.name}</b></td>
-                    <td>${p.age} / ${p.gender[0]} / ${p.state}</td>
-                    <td>${p.type}</td>
-                    <td>${p.bio}</td>
-                    <td class="score ${cls}">${p.current.toFixed(0)}% <span class="rep-tag">${tier}</span></td>
-                </tr>`;
+                repBody.innerHTML += `<tr><td><b>${p.name}</b></td><td>${p.age}/${p.gender[0]}/${p.state}</td><td>${p.type}</td><td>${p.bio}</td><td class="score ${cls}">${p.current.toFixed(0)}% <span class="rep-tag">${tier}</span></td></tr>`;
             });
 
-            // Opportunity Machine
             const critic = agents.find(a => a.current > 35 && a.current < 55) || agents[0];
             document.getElementById('rep-opp-verbatim').innerText = `"If you could bundle this with a 0% interest EMI plan or a 'First-Year Resilience' cashback, my current ${critic.current.toFixed(0)}% intent would jump back to 85%. I want to buy, but I need security."`;
 
-            document.getElementById('rep-rationale').innerText = `
-                The dashboard audit confirms that while the general population resonance dropped to ${avgPost.toFixed(0)}%, the '${targetCluster}' segment remains extremely resilient.
-                Macro-drift sensitivity is highest in 'The Stressed Savers' who hit survival thresholds faster.
-                Strategy recommendation: Focus 80% of marketing spend on '${targetCluster}' and implement price-decoupling for other clusters to recover the ${(avgPre - avgPost).toFixed(0)}% loss.
-            `;
+            document.getElementById('rep-rationale').innerText = `The dashboard audit confirms that while the general population resonance dropped to ${avgPost.toFixed(0)}%, the '${targetCluster}' segment remains extremely resilient. Macro-drift sensitivity is highest in 'The Stressed Savers' who hit survival thresholds faster. Strategy recommendation: Focus 80% of marketing spend on '${targetCluster}' and implement price-decoupling for other clusters to recover the ${(avgPre - avgPost).toFixed(0)}% loss.`;
+
+            const marketDriversEl = document.getElementById('market-drivers');
+            marketDriversEl.innerHTML = '';
+            const prodDesc = document.getElementById('product-desc').value;
+            const descA = document.getElementById('desc-a').value;
+            const descB = document.getElementById('desc-b').value;
+
+            let winTxt = prodDesc;
+            if (simMode === 'ab') {
+                const winA = agents[0].base === score(descA, agents[0]);
+                winTxt = winA ? descA : descB;
+            }
+
+            const drivers = getMarketDrivers(agents, winTxt);
+            drivers.forEach(driver => {
+                marketDriversEl.innerHTML += `<div class="driver-tag"><i>${driver.title}</i>${driver.desc}</div>`;
+            });
+
+            const sentimentInsightEl = document.getElementById('sentiment-insight');
+            const avgIntent = (avgPost);
+            let sentimentText = "";
+            if (avgIntent > 60) {
+                sentimentText = "The strategy strongly connects with the broader market because it aligns with financial reality and emotional comfort.";
+            } else if (avgIntent > 40) {
+                sentimentText = "Moderate market alignment. The crowd is receptive but remains cost-conscious and wary of long-term commitments.";
+            } else {
+                sentimentText = "Significant market friction detected. The current proposition fails to overcome regional risk avoidance and budget constraints.";
+            }
+            sentimentInsightEl.innerHTML = `<b>Crowd Synchronization</b> ${sentimentText}`;
         }
 
         function showOverlay(title, steps, callback) {
             const overlay = document.getElementById('sim-overlay');
             const bar = document.getElementById('sim-progress');
             const status = document.getElementById('sim-status');
-            overlay.style.display = 'flex'; document.getElementById('sim-title').innerText = title;
+            overlay.style.display = 'flex';
+            document.getElementById('sim-title').innerText = title;
             let p = 0;
+
             const ival = setInterval(() => {
                 p += 5; bar.style.width = p + "%";
                 if (p % 20 === 0) status.innerText = steps[Math.floor(p / 25)] || steps[steps.length - 1];
-                if (p >= 100) { clearInterval(ival); setTimeout(() => { overlay.style.display = 'none'; callback(); }, 500); }
-            }, 60);
+
+                if (p >= 100) {
+                    clearInterval(ival); setTimeout(() => {
+                        overlay.style.display = 'none'; callback();
+                    }
+
+                        , 500);
+                }
+            }
+
+                , 60);
+        }
+
+        function goToStep(n) {
+            // Cleanup current
+            document.getElementById('page-' + currentStep).classList.remove('active');
+            document.getElementById('st-' + currentStep).classList.remove('active');
+
+            if (n > currentStep) {
+                document.getElementById('st-' + currentStep).classList.add('completed');
+            }
+
+            currentStep = n;
+
+            // Initialize target
+            document.getElementById('page-' + currentStep).classList.add('active');
+            document.getElementById('st-' + currentStep).classList.add('active');
+
+            if (currentStep === 3) {
+                initDriftUI();
+                if (!window.driftEventsInited) {
+                    initStep3Events();
+                    window.driftEventsInited = true;
+                }
+            }
+
+            updateFooter();
         }
 
         function nextStep() {
-            if (!stepCompleted[currentStep]) { notify("Execute current phase to unlock."); return; }
-            if (currentStep === 4) { generateFinalReport(); return; }
-            document.getElementById('page-' + currentStep).classList.remove('active');
-            document.getElementById('st-' + currentStep).classList.remove('active');
-            document.getElementById('st-' + currentStep).classList.add('completed');
-            currentStep++;
-            document.getElementById('page-' + currentStep).classList.add('active');
-            document.getElementById('st-' + currentStep).classList.add('active');
-            updateFooter();
+            if (!stepCompleted[currentStep]) {
+                notify("Execute current phase to unlock.");
+                return;
+            }
+
+            if (currentStep === 4) {
+                showOverlay("Aggregating Multi-Cluster Intel...", ["Synchronizing 50,000 Neural Nodes...", "Calibrating Regional Heatmap...", "Finalizing Command Center..."], () => {
+                    generatePulseDashboard();
+                    goToStep(5);
+                });
+                return;
+            }
+
+            goToStep(currentStep + 1);
         }
 
         function prevStep() {
             if (currentStep > 1) {
-                document.getElementById('page-' + currentStep).classList.remove('active');
-                document.getElementById('st-' + currentStep).classList.remove('active');
-                currentStep--;
-                document.getElementById('st-' + currentStep).classList.add('active');
+                goToStep(currentStep - 1);
                 document.getElementById('st-' + currentStep).classList.remove('completed');
-                document.getElementById('page-' + currentStep).classList.add('active');
-                updateFooter();
             }
         }
 
         function updateFooter() {
-            const h = ["", "Set Simulation methodology.", "neural resonance Calculation.", "market drift Induction.", "high-Resolution resilience Audit.", "View Executive Dashboard."];
+            const h = ["",
+                "Set Simulation methodology.",
+                "neural resonance Calculation.",
+                "market drift Induction.",
+                "high-Resolution resilience Audit.",
+                "Market Pulse Command Center"];
             document.getElementById('status-hint').innerText = "Phase " + currentStep + " — " + h[currentStep];
             document.getElementById('btn-back').disabled = (currentStep === 1);
-            document.getElementById('btn-next').innerText = (currentStep === 4) ? "GENERATE MASTER DASHBOARD ◈" : "Next Step →";
+            document.getElementById('btn-next').innerText = (currentStep === 4) ? "GENERATE MARKET PULSE ◈" : "Next Step →";
+            document.getElementById('btn-next').style.display = (currentStep === 5) ? 'none' : 'block';
         }
 
         function notify(msg) {
-            const t = document.createElement('div'); t.style = "position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:10px 25px; border-radius:30px; font-size:12px; font-weight:800; z-index:99999; box-shadow:0 10px 30px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2);";
-            t.innerText = "◈ " + msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000);
+            const t = document.createElement('div');
+            t.style = "position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:10px 25px; border-radius:30px; font-size:12px; font-weight:800; z-index:99999; box-shadow:0 10px 30px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2);";
+            t.innerText = "◈ " + msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        function generatePulseDashboard() {
+            // 1. PPI (Probabilistic Purchase Intent)
+            const avgIntent = agents.reduce((s, a) => s + a.current, 0) / popSize;
+            document.getElementById('ppi-val').innerText = avgIntent.toFixed(1) + "%";
+
+            // 2. CRI (Cultural Resonance Index)
+            const cri = (avgIntent * 0.8 + 20) / 10;
+            document.getElementById('cri-val').innerText = cri.toFixed(2);
+
+            // 3. Price Elasticity (Simulated volume drop) - Fixed calculation
+            const elasticity = (0.8 + (avgIntent / 100) * 1.2).toFixed(2);
+            document.getElementById('elast-val').innerText = elasticity;
+
+            // 4. Shock Resilience
+            const baseAvg = agents.reduce((s, a) => s + a.base, 0) / popSize;
+            const resilience = Math.max(0, 100 - (baseAvg - avgIntent) * 2.5).toFixed(0);
+            document.getElementById('res-val').innerText = resilience + " / 100";
+
+            // 5. Adoption Velocity
+            const velocity = (avgIntent / 15).toFixed(1) + "x";
+            document.getElementById('adov-val').innerText = velocity;
+
+            // 6. Drift Velocity
+            document.getElementById('drift-v-val').innerText = (100 - resilience / 4).toFixed(1) + " bps";
+
+            // Update Header Status
+            document.getElementById('pulse-conf').innerText = (90 + Math.random() * 8).toFixed(1) + "%";
+            document.getElementById('pulse-env').innerText = resilience > 70 ? "STABLE" : "FRAGILE";
+            document.getElementById('pulse-env').style.color = resilience > 70 ? "var(--accent3)" : "var(--danger)";
+
+            renderIndiaHeatmap();
+            renderBiasRadar();
+            renderPriceCurve();
+            renderShareChart();
+            renderAdoptionDonut();
+        }
+
+        function renderIndiaHeatmap() {
+            const container = document.getElementById('india-map-container');
+            const targetStates = getTargetStates();
+
+            // Calculate real-time PPI per state from the 50,000 households
+            const statePPI = {};
+            targetStates.forEach(s => {
+                const stateAgents = agents.filter(a => a.state === s);
+                statePPI[s] = stateAgents.reduce((sum, a) => sum + a.current, 0) / (stateAgents.length || 1);
+            });
+
+            const getColor = (val) => {
+                if (!val) return 'rgba(255,255,255,0.03)';
+                if (val > 70) return '#22d3a5'; // High accent3
+                if (val > 50) return '#7c6af7'; // Mid accent
+                return '#f43f5e'; // Low danger
+            };
+
+            // Enhanced India Map SVG paths (Representative Simplified)
+            let svg = `<svg viewBox="0 0 400 500" width="100%" height="100%" style="border-radius:12px;">`;
+            const paths = {
+                "Maharashtra": "M100,220 L160,220 L180,260 L140,300 L90,280 Z",
+                "Kerala": "M130,410 L150,410 L150,480 L130,480 Z",
+                "Karnataka": "M110,310 L160,310 L170,390 L120,400 Z",
+                "Delhi": "M170,120 L190,120 L190,140 L170,140 Z",
+                "Gujarat": "M40,200 L90,200 L100,260 L50,260 Z",
+                "Tamil Nadu": "M160,400 L210,400 L200,480 L170,480 Z",
+                "West Bengal": "M300,230 L340,230 L330,300 L290,280 Z",
+                "Punjab": "M130,80 L170,80 L170,120 L130,120 Z"
+            };
+
+            Object.entries(paths).forEach(([state, d]) => {
+                const val = statePPI[state];
+                const color = getColor(val);
+                svg += `<path class="state-path" d="${d}" fill="${color}" stroke="var(--border)" stroke-width="1">
+                          <title>${state}: ${val ? val.toFixed(1) + '%' : 'No Data'}</title>
+                        </path>`;
+            });
+
+            // Legend
+            svg += `
+                <g transform="translate(20, 440)">
+                    <rect width="10" height="10" fill="#22d3a5" rx="2" /> <text x="15" y="9" fill="var(--muted)" font-size="8">High PPI (>70%)</text>
+                    <rect y="15" width="10" height="10" fill="#7c6af7" rx="2" /> <text x="15" y="24" fill="var(--muted)" font-size="8">Stable PPI (50-70%)</text>
+                    <rect y="30" width="10" height="10" fill="#f43f5e" rx="2" /> <text x="15" y="39" fill="var(--muted)" font-size="8">Friction/Risk (<50%)</text>
+                </g>
+            `;
+            svg += `</svg>`;
+            container.innerHTML = svg;
+        }
+
+        function renderBiasRadar() {
+            const container = document.getElementById('bias-radar-container');
+
+            // Derive Bias levels from the actual population (weighted by intent fracture)
+            // Strategy: Higher UAI state + high inflation = higher Loss Aversion
+            const avgUAI = agents.reduce((s, a) => s + a.hProf.UAI, 0) / popSize;
+            const avgPDI = agents.reduce((s, a) => s + a.hProf.PDI, 0) / popSize;
+
+            const biasMetrics = [
+                { name: "Loss Aversion", val: Math.min(95, avgUAI + 20) },
+                { name: "Anchoring", val: 65 },
+                { name: "Bandwagon", val: 55 },
+                { name: "Authority", val: avgPDI },
+                { name: "Status Quo", val: 72 }
+            ];
+
+            let svg = `<svg viewBox="0 0 200 200" width="100%" height="100%">`;
+            const cx = 100, cy = 100, r = 60;
+
+            // Background Polygons
+            for (let j = 1; j <= 4; j++) {
+                let pts = "";
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * 72 - 90) * Math.PI / 180;
+                    pts += `${cx + (r * j / 4) * Math.cos(angle)},${cy + (r * j / 4) * Math.sin(angle)} `;
+                }
+                svg += `<polygon points="${pts}" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.5" />`;
+            }
+
+            // Data Polygon
+            let dataPts = "";
+            biasMetrics.forEach((m, i) => {
+                const angle = (i * 72 - 90) * Math.PI / 180;
+                const dist = (m.val / 100) * r;
+                dataPts += `${cx + dist * Math.cos(angle)},${cy + dist * Math.sin(angle)} `;
+            });
+            svg += `<polygon points="${dataPts}" fill="rgba(124, 106, 247, 0.2)" stroke="var(--accent)" stroke-width="2" />`;
+
+            // Labels
+            biasMetrics.forEach((m, i) => {
+                const angle = (i * 72 - 90) * Math.PI / 180;
+                const lx = cx + (r + 15) * Math.cos(angle);
+                const ly = cy + (r + 15) * Math.sin(angle);
+                svg += `<text x="${lx}" y="${ly}" class="radar-label" text-anchor="middle">${m.name}</text>`;
+            });
+
+            svg += `</svg>`;
+            container.innerHTML = svg;
+        }
+
+        function renderPriceCurve() {
+            const container = document.getElementById('price-curve-container');
+            const avgIntent = agents.reduce((s, a) => s + a.current, 0) / popSize;
+            // Value Cliff shifts based on intent
+            const cliffX = 60 + (avgIntent / 2);
+
+            let svg = `<svg viewBox="0 0 200 120" width="100%" height="100%">
+                         <path d="M 10 100 Q 50 100 ${cliffX} 60 T 190 20" fill="none" stroke="var(--accent3)" stroke-width="2" />
+                         <circle cx="${cliffX}" cy="60" r="4" fill="var(--danger)">
+                            <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite" />
+                         </circle>
+                         <text x="${cliffX + 10}" y="65" fill="var(--text)" font-size="8" font-weight="800">VALUE CLIFF</text>
+                       </svg>`;
+            container.innerHTML = svg;
+        }
+
+        function renderShareChart() {
+            const container = document.getElementById('share-chart');
+            const avgIntent = agents.reduce((s, a) => s + a.current, 0) / popSize;
+
+            // Simulated market share distribution
+            const data = [
+                { label: "SynthIQ", val: (avgIntent * 0.4).toFixed(0) },
+                { label: "Competitor A", val: (30 - avgIntent * 0.1).toFixed(0) },
+                { label: "Competitor B", val: 18 },
+                { label: "Others", val: 12 }
+            ];
+
+            container.innerHTML = data.map((d, i) => `
+                <div class="chart-bar-wrapper">
+                    <div class="chart-bar ${i === 0 ? 'winner' : ''}" style="height:${d.val * 2}px" data-val="${d.val}"></div>
+                    <div class="chart-label">${d.label}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderAdoptionDonut() {
+            const container = document.getElementById('adoption-donut-container');
+            const legend = document.getElementById('adoption-legend');
+
+            // Calculate adoption counts per cluster (Intent >= 70%)
+            const adoptionData = ARCHETYPES.map(arch => {
+                const group = agents.filter(a => a.type === arch.name);
+                const highIntentCount = group.filter(a => a.current >= 70).length;
+                return { name: arch.name, val: highIntentCount, color: arch.color };
+            });
+
+            const total = adoptionData.reduce((s, d) => s + d.val, 0) || 1;
+
+            let svg = `<svg viewBox="0 0 100 100" width="100%" height="100%">`;
+            let startAngle = 0;
+            const r = 35;
+            const cx = 50, cy = 50;
+
+            adoptionData.forEach(d => {
+                const sliceAngle = (d.val / total) * 360;
+                if (sliceAngle === 0) return;
+
+                // SVG arc path uses radians
+                const rad = (angle) => (angle - 90) * Math.PI / 180;
+                const x1 = cx + r * Math.cos(rad(startAngle));
+                const y1 = cy + r * Math.sin(rad(startAngle));
+                startAngle += sliceAngle;
+                const x2 = cx + r * Math.cos(rad(startAngle));
+                const y2 = cy + r * Math.sin(rad(startAngle));
+
+                const largeArcFlag = sliceAngle > 180 ? 1 : 0;
+                svg += `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${largeArcFlag} 1 ${x2} ${y2}" fill="none" stroke="${d.color}" stroke-width="12" />`;
+            });
+
+            // Center text
+            svg += `<text x="50" y="52" fill="var(--text)" font-size="8" text-anchor="middle" font-weight="800">ADOPTION</text>`;
+            svg += `<text x="50" y="60" fill="var(--accent3)" font-size="6" text-anchor="middle" font-weight="700">HIGH-INTENT</text>`;
+            svg += `</svg>`;
+            container.innerHTML = svg;
+
+            // Legend
+            legend.innerHTML = adoptionData.filter(d => d.val > 0).map(d => `
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="width:8px; height:8px; background:${d.color}; border-radius:2px;"></span>
+                    <span>${d.name.split(' ')[1]}: ${((d.val / total) * 100).toFixed(0)}%</span>
+                </div>
+            `).join('');
         }
 
         updatePopLabel();
+        // --- Core Scoring Engine ---
+        function score(txt, a) {
+            txt = txt.toLowerCase();
+            let s = 50;
+            if ((txt.includes('daily') || txt.includes('utility') || txt.includes('eco')) && a.income < 70000) s += 15;
+            if ((txt.includes('premium') || txt.includes('luxury')) && a.income > 150000) s += 20;
+
+            let cFit = 0;
+            const p = a.hProf;
+
+            if (p.PDI > 65 && txt.includes('status')) cFit += (p.PDI / 100) * 10;
+            if (p.IDV > 60 && (txt.includes('special') || txt.includes('unique'))) cFit += (p.IDV / 100) * 12;
+            else if (p.IDV < 40 && (txt.includes('community') || txt.includes('shared'))) cFit += ((100 - p.IDV) / 100) * 8;
+            if (p.UAI > 60 && (txt.includes('secure') || txt.includes('guarantee'))) cFit += (p.UAI / 100) * 15;
+            else if (p.UAI < 40 && (txt.includes('disruptive') || txt.includes('experimental'))) cFit += ((100 - p.UAI) / 100) * 10;
+            if (p.LTO > 60 && (txt.includes('durable') || txt.includes('lifetime'))) cFit += (p.LTO / 100) * 12;
+            if (p.IVR > 60 && (txt.includes('fun') || txt.includes('joy'))) cFit += (p.IVR / 100) * 10;
+
+            return Math.min(100, s + cFit + (Math.random() * 15));
+        }
+
+        initStatesUI();
+        updateStateTriggerLabel();
         updateFooter();
+        // --- Explainable Insights Engine ---
+        function getHeroInsight(agent, score, text) {
+            text = text.toLowerCase();
+            const p = agent.hProf;
+            let insights = [];
+
+            if (score > 75) {
+                insights.push("This persona fits because they strongly align with the product's value proposition.");
+            } else if (score < 40) {
+                insights.push("Low resonance: The persona's lifestyle and values conflict with this strategy.");
+            } else {
+                insights.push("Mixed feelings: The persona sees some value but has significant reservation.");
+            }
+
+            // Behavioral Triggers
+            if (text.includes('eco') || text.includes('utility')) {
+                if (agent.income < 70000) insights.push("They value the financial practicality of the 'Utility' focus.");
+            }
+            if (text.includes('premium') || text.includes('luxury')) {
+                if (agent.income > 150000) insights.push("The 'Luxury' status matches their high-discretionary lifestyle.");
+                else insights.push("Price-point friction: Their income level makes this feel unattainable.");
+            }
+
+            // Cultural Drivers (Hofstede)
+            if (p.UAI > 70 && (text.includes('secure') || text.includes('guarantee'))) {
+                insights.push("High Risk-Avoidance: They responded well to stability and trust markers.");
+            }
+            if (p.PDI > 70 && text.includes('status')) {
+                insights.push("Hierarchy Drive: They value the social authority of your brand.");
+            }
+            if (p.LTO > 70 && text.includes('durable')) {
+                insights.push("Long-Term Value: Resonated with the focus on longevity over speed.");
+            }
+
+            return insights.join(" ");
+        }
+
+        function getMarketDrivers(pop, winTxt) {
+            winTxt = winTxt.toLowerCase();
+            let drivers = [];
+
+            // Calculate population aggregate sensitivities
+            const lowIncomeCount = pop.filter(a => a.income < 50000).length;
+            const highUAICount = pop.filter(a => a.hProf.UAI > 65).length;
+
+            if (winTxt.includes('utility') || winTxt.includes('save')) {
+                drivers.push({ title: "Budget Discipline", desc: `${Math.round((lowIncomeCount / pop.length) * 100)}% of households prioritized savings promise.` });
+            }
+            if (winTxt.includes('trust') || winTxt.includes('secure')) {
+                drivers.push({ title: "Risk Mitigation", desc: `Stability - seekers(${Math.round((highUAICount / pop.length) * 100)} %) preferred the safety guarantee.` });
+            } else {
+                drivers.push({ title: "Social Authority", desc: "Segments with high power-distance responded to status cues." });
+                drivers.push({ title: "Brand Aspiration", desc: "Upwardly mobile professionals drove the premium lift." });
+            }
+
+            return drivers.slice(0, 2);
+        }
+
+        function updateInsightUI(id, insight) {
+            const el = document.getElementById(id);
+            if (insight) {
+                el.innerHTML = `<b>Behavioral Logic</b> ${insight}`;
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
     </script>
 </body>
 
